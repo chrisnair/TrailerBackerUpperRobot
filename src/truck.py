@@ -68,7 +68,7 @@ class Truck:
         """
         JOYSTICK_MAX = 32767.0
         STEERING_RACK_MAX = 21
-        ANGLE_NORMALIZATION_CONSTANT = JOYSTICK_MAX / 60 # Ensures steering angle ranges from [-21, 21]
+        ANGLE_NORMALIZATION_CONSTANT = JOYSTICK_MAX / STEERING_RACK_MAX # Ensures steering angle ranges from [-21, 21]
         angle = stick_val / ANGLE_NORMALIZATION_CONSTANT
         self.set_steering_angle(angle)
 
@@ -80,15 +80,15 @@ class Truck:
         LEFT_STEERING_RATIO, RIGHT_STEERING_RATIO = 21/60, 31/60 # MOVE INTO CONFIG FILE
         
 
-        if angle > 61: # goes up to 22 in case of rounding error
-             angle = 60
-        elif angle < -61: 
-             angle = -60
+        if angle > 22: # goes up to 22 in case of rounding error
+             angle = 21
+        elif angle < -22: 
+             angle = -21
         
         self.current_steering_angle = angle 
         
-        #angle = angle / LEFT_STEERING_RATIO if angle < 0 else angle / RIGHT_STEERING_RATIO
-        self.steer_motor.set_angle(angle+60)
+        angle = angle / LEFT_STEERING_RATIO if angle < 0 else angle / RIGHT_STEERING_RATIO
+        self.steer_motor.set_angle(angle+DriveParams.STEERING_RACK_CENTER)
 
 
        
@@ -150,16 +150,12 @@ if __name__ == "__main__":
     g = Gamepad()
     car = Truck()
     while True:
-       try:
-           
         g.update_input()
-        steer = g.get_stick_value(Inputs.LX)
-        drive = g.get_trigger_value()
-
-        if steer is not None:
-            car.gamepad_steer(steer)
-        if drive is not None:
-            car.gamepad_drive(drive)
-            print(drive)
-       except:
-           car.cleanup()
+        if g.was_pressed(Inputs.R_BUMPER):
+            car.set_steering_angle(car.current_steering_angle+1)
+            print("angle:",car.current_steering_angle)   
+        elif g.was_pressed(Inputs.L_BUMPER):
+            car.set_steering_angle(car.current_steering_angle-1)
+            print(car.current_steering_angle)   
+        elif g.was_pressed(Inputs.B):
+            break

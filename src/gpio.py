@@ -79,7 +79,7 @@ class Servo:
     Servo.
     """
 
-    def __init__(self, pin:int, freq: int = FREQ, max_angle: int = 180):
+    def __init__(self, pin:int, freq: int = FREQ, max_angle: int = 120):
         """
         Initializes servo pin as output pin and sets PWM frequency. Param `max_angle` = Maximum manufacturer-specified angle of motor.
         That is, the motor range is [0, max_angle]
