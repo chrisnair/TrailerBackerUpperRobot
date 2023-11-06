@@ -151,6 +151,10 @@ if __name__ == "__main__":
     car = Truck()
     while True:
         g.update_input()
+        steer = g.get_stick_value(Inputs.LX)
+        if steer is not None:
+            car.gamepad_steer(steer)
+        """
         if g.was_pressed(Inputs.R_BUMPER):
             car.set_steering_angle(car.current_steering_angle+1)
             print("angle:",car.current_steering_angle)   
@@ -158,4 +162,4 @@ if __name__ == "__main__":
             car.set_steering_angle(car.current_steering_angle-1)
             print(car.current_steering_angle)   
         elif g.was_pressed(Inputs.B):
-            break
+        """
