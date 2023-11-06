@@ -16,6 +16,14 @@ public class DefaultOnlineCommands {
      * Simple text messages are meant to only contain text and no other commands or data
      */
     public static final String SIMPLE_TEXT = "st;";
+    
+    public static final String THROTTLE = "thr;";
+
+    public static final String STEERING_ANGLE = "sa;";
+
+    public static final String PICTURE = "pic;";
+
+    public static final String GYRO_READING = "gyr;";
     /**
      * Identifier for a request message, where the caller is asking for something about the other
      * This command is proceeded by a flag that indicates what the caller is asking for (requesting)
