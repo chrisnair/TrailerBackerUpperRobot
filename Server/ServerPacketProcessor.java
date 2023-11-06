@@ -25,18 +25,18 @@ public class ServerPacketProcessor extends PacketProcessor{
                 Printer.printIfVerbose("Distributing text message: " + Packet.shortenedID(p.getPacketID()));
                 ch.sendForServerToDistribute(p);
                 return;
-            case DefaultOnlineCommands.THROTTLE:
-                System.out.println((double)p.getData());
-                return;
-            case DefaultOnlineCommands.STEERING_ANGLE:
-                System.out.println((double)p.getData());
-                return;
-            case DefaultOnlineCommands.PICTURE:
-                System.out.println((BufferedImage)p.getData());
-                return;
-            case DefaultOnlineCommands.GYRO_READING:
-                System.out.println((double)p.getData());
-                return;
+            case DefaultOnlineCommands.CONTROL_SIGNAL:
+                switch(p.getCommand().getCommandLine(1)) {
+                    case DefaultOnlineCommands.THROTTLE:
+                        System.out.println((double)p.getData());
+                        return;
+                    case DefaultOnlineCommands.STEERING_ANGLE:
+                        System.out.println((double)p.getData());
+                        return;
+                    case DefaultOnlineCommands.GYRO_READING:
+                        System.out.println((double)p.getData());
+                        return;
+                }
             case DefaultOnlineCommands.QUIT:
 
         }

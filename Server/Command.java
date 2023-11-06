@@ -76,6 +76,12 @@ public final class Command implements Serializable {
             case DefaultOnlineCommands.ANSWER -> {
                 return "answer " + getCommandLine(1);
             }
+            case DefaultOnlineCommands.INFO -> {
+                return "info " + getCommandLine(1);
+            }
+            case DefaultOnlineCommands.CONTROL_SIGNAL -> {
+                return "control signal " + getCommandLine(1);
+            }
             case DefaultOnlineCommands.QUIT -> {
                 return "quit";
             }

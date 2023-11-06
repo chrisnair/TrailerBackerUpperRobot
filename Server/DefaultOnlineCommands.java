@@ -21,8 +21,6 @@ public class DefaultOnlineCommands {
 
     public static final String STEERING_ANGLE = "sa;";
 
-    public static final String PICTURE = "pic;";
-
     public static final String GYRO_READING = "gyr;";
     /**
      * Identifier for a request message, where the caller is asking for something about the other
@@ -48,6 +46,10 @@ public class DefaultOnlineCommands {
      * Identifier that the sender of this packet requests that the recipient assigns the data of the packet in some way or form.
      */
     public static final String ASSIGN = "ass;";
+    
+    public static final String INFO = "inf;";
+
+    public static final String CONTROL_SIGNAL = "cnt;";
 
     /**
      * converts a UUID to a IDIdentifier, which is an UUID in the form of a command identifier
