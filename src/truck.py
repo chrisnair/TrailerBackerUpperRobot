@@ -60,6 +60,9 @@ class Truck:
             self.drive_motor.stop_rotation()
         self.current_drive_power = power
         self.drive_motor.set_power(duty_cycle)
+    
+    def phone_steer(self, angle):
+        self.set_steering_angle(-angle) # Me when Josh wants left to be positive
 
     def gamepad_steer(self, stick_val: float):
         """
@@ -80,14 +83,14 @@ class Truck:
         LEFT_STEERING_RATIO, RIGHT_STEERING_RATIO = 21/60, 31/60 # MOVE INTO CONFIG FILE
         
 
-        if angle > 61: # goes up to 22 in case of rounding error
-             angle = 60
-        elif angle < -61: 
-             angle = -60
+        if angle > 22: # goes up to 22 in case of rounding error
+             angle = 21
+        elif angle < -22: 
+             angle = -21
         
         self.current_steering_angle = angle 
         
-        #angle = angle / LEFT_STEERING_RATIO if angle < 0 else angle / RIGHT_STEERING_RATIO
+        angle = angle / LEFT_STEERING_RATIO if angle < 0 else angle / RIGHT_STEERING_RATIO
         self.steer_motor.set_angle(angle+60)
 
 
@@ -147,25 +150,20 @@ class Truck:
 
 if __name__ == "__main__":
     from gamepad import Gamepad, Inputs
+    from data_client import DataClient
     g = Gamepad()
     car = Truck()
+    client = DataClient()
     while True:
         try:
-            with open('your_file.txt', 'r') as file:
-                 #Read the float value from the file and assign it to a variable
-                steer = float(file.read().strip())
-            g.update_input()
-            steer = g.get_stick_value(Inputs.LX)
-            drive = g.get_trigger_value()
+            steer = client.read_float_from_file("steering_angle.tbu")
+            drive = client.read_float_from_file("drive_power.tbu")
 
             if steer is not None:
                 car.gamepad_steer(steer)
             if drive is not None:
                 car.gamepad_drive(drive)
                 print(drive)
-        except FileNotFoundError:
-            print("File not found.")
-        except ValueError:
-            print("The file does not contain a valid float value.")
-        except:
+        
+        except KeyboardInterrupt:
            car.cleanup()
