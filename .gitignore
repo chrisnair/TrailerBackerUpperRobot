@@ -27,3 +27,5 @@ replay_pid*
 /src/__pycache__/*
 
 
+#ignore .tbu if they end up in here somehow
+*.tbu
