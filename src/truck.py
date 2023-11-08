@@ -150,16 +150,22 @@ if __name__ == "__main__":
     g = Gamepad()
     car = Truck()
     while True:
-       try:
-           
-        g.update_input()
-        steer = g.get_stick_value(Inputs.LX)
-        drive = g.get_trigger_value()
+        try:
+            with open('your_file.txt', 'r') as file:
+                 #Read the float value from the file and assign it to a variable
+                steer = float(file.read().strip())
+            g.update_input()
+            steer = g.get_stick_value(Inputs.LX)
+            drive = g.get_trigger_value()
 
-        if steer is not None:
-            car.gamepad_steer(steer)
-        if drive is not None:
-            car.gamepad_drive(drive)
-            print(drive)
-       except:
+            if steer is not None:
+                car.gamepad_steer(steer)
+            if drive is not None:
+                car.gamepad_drive(drive)
+                print(drive)
+        except FileNotFoundError:
+            print("File not found.")
+        except ValueError:
+            print("The file does not contain a valid float value.")
+        except:
            car.cleanup()

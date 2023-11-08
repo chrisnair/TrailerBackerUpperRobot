@@ -4,6 +4,22 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
+        
+        {
+            "type": "java",
+            "name": "ServerStarter",
+            "request": "launch",
+            "mainClass": "Online.ServerStarter",
+            "projectName": "TrailerBackerUpperRobot_8fdb73b8"
+
+        },
+        {
+            "type": "java",
+            "name": "Main",
+            "request": "launch",
+            "mainClass": "Main",
+            "projectName": "TrailerBackerUpperRobot_8fdb73b8",
+        },
         {
             "name": "Python: Current File",
             "type": "python",
@@ -22,4 +38,5 @@
             "sudo": true
         }
     ]
+    
 }

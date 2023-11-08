@@ -16,12 +16,6 @@ public class DefaultOnlineCommands {
      * Simple text messages are meant to only contain text and no other commands or data
      */
     public static final String SIMPLE_TEXT = "st;";
-    
-    public static final String THROTTLE = "thr;";
-
-    public static final String STEERING_ANGLE = "sa;";
-
-    public static final String GYRO_READING = "gyr;";
     /**
      * Identifier for a request message, where the caller is asking for something about the other
      * This command is proceeded by a flag that indicates what the caller is asking for (requesting)
@@ -46,10 +40,12 @@ public class DefaultOnlineCommands {
      * Identifier that the sender of this packet requests that the recipient assigns the data of the packet in some way or form.
      */
     public static final String ASSIGN = "ass;";
-    
+
+    public static final String GYRO_READING = "gyr;";
+
     public static final String INFO = "inf;";
 
-    public static final String CONTROL_SIGNAL = "cnt;";
+    public static final String CONTROL_SINGAL = "cnt;";
 
     /**
      * converts a UUID to a IDIdentifier, which is an UUID in the form of a command identifier

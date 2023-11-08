@@ -64,28 +64,25 @@ public final class Command implements Serializable {
      */
     public String getTypeString(){
         switch(getType()){
-            case DefaultOnlineCommands.SIMPLE_TEXT -> {
+            case DefaultOnlineCommands.SIMPLE_TEXT : {
                 return "simpleTextMessage";
             }
-            case DefaultOnlineCommands.VOID -> {
+            case DefaultOnlineCommands.VOID : {
                 return "voidMessage";
             }
-            case DefaultOnlineCommands.REQUEST -> {
+            case DefaultOnlineCommands.REQUEST : {
                 return "request " + getCommandLine(1);
             }
-            case DefaultOnlineCommands.ANSWER -> {
+            case DefaultOnlineCommands.ANSWER : {
                 return "answer " + getCommandLine(1);
             }
-            case DefaultOnlineCommands.INFO -> {
-                return "info " + getCommandLine(1);
+            case DefaultOnlineCommands.CONTROL_SINGAL : {
+                return "control" + getCommandLine(1);
             }
-            case DefaultOnlineCommands.CONTROL_SIGNAL -> {
-                return "control signal " + getCommandLine(1);
-            }
-            case DefaultOnlineCommands.QUIT -> {
+            case DefaultOnlineCommands.QUIT : {
                 return "quit";
             }
-            default -> {
+            default :{
                 return getType() + " (Non-default or unknown)";
             }
         }

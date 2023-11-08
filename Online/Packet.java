@@ -103,7 +103,6 @@ public final class Packet implements Serializable {
         return this.packetID;
     }
 
-
     @Override
     public String toString(){
         return toShortenedString();
