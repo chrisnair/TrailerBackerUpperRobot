@@ -31,27 +31,19 @@ public class ServerPacketProcessor extends PacketProcessor{
                 switch (p.getCommand().getCommandLine(1)) {
                     case DefaultOnlineCommands.STEERING_ANGLE : {
                         System.out.println("Steering angle: " + p.getData());
-                        File outputFile = new File("/tbu_data/steering_angle.txt");
-                        try {
-                            FileWriter writer = new FileWriter(outputFile);
-                            writer.write(p.getData().toString());
-                            System.out.println("wrote");
-                            writer.close();
-                        } catch (IOException e) {
-                            // TODO Auto-generated catch block
-                            e.printStackTrace();
-                        }
+                        writePacketDataToFile(p, "steering_angle.tbu");
                         return;
                     }
                     case DefaultOnlineCommands.THROTTLE:{
                         System.out.println((double)p.getData());
+                        writePacketDataToFile(p, "drive_power.tbu");
                         return;
                     }
                 }
             case DefaultOnlineCommands.INFO:
                 switch (p.getCommand().getCommandLine(1)) {
                     case DefaultOnlineCommands.PICTURE:{
-                        System.out.println((BufferedImage)p.getData());
+                        //System.out.println((BufferedImage)p.getData());
                         return;
                     }
                 }
@@ -61,6 +53,17 @@ public class ServerPacketProcessor extends PacketProcessor{
         }
 
         super.executePacket(p);
+    }
+
+    public void writePacketDataToFile(Packet p, String filename){
+        File outputFile = new File("/tbu_data/"+filename);
+                        try {
+                            FileWriter writer = new FileWriter(outputFile);
+                            writer.write(p.getData().toString());
+                            writer.close();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
     }
 
 }
