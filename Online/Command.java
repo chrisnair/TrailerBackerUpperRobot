@@ -77,7 +77,10 @@ public final class Command implements Serializable {
                 return "answer " + getCommandLine(1);
             }
             case DefaultOnlineCommands.CONTROL_SINGAL : {
-                return "control" + getCommandLine(1);
+                return "control " + getCommandLine(1);
+            }
+            case DefaultOnlineCommands.INFO : {
+                return "info " + getCommandLine(1);
             }
             case DefaultOnlineCommands.QUIT : {
                 return "quit";

@@ -27,11 +27,9 @@ public class ServerPacketProcessor extends PacketProcessor{
                 Printer.printIfVerbose("Distributing text message: " + Packet.shortenedID(p.getPacketID()));
                 ch.sendForServerToDistribute(p);
                 return;
-            case DefaultOnlineCommands.GYRO_READING:
-                System.out.println((double)p.getData());
             case DefaultOnlineCommands.CONTROL_SINGAL:
                 switch (p.getCommand().getCommandLine(1)) {
-                    case DefaultOnlineCommands.GYRO_READING : {
+                    case DefaultOnlineCommands.STEERING_ANGLE : {
                         System.out.println("Steering angle: " + p.getData());
                         File outputFile = new File("/tbu_data/steering_angle.txt");
                         try {
@@ -44,11 +42,20 @@ public class ServerPacketProcessor extends PacketProcessor{
                             e.printStackTrace();
                         }
                         return;
-
-                        
-
+                    }
+                    case DefaultOnlineCommands.THROTTLE:{
+                        System.out.println((double)p.getData());
+                        return;
                     }
                 }
+            case DefaultOnlineCommands.INFO:
+                switch (p.getCommand().getCommandLine(1)) {
+                    case DefaultOnlineCommands.PICTURE:{
+                        System.out.println((BufferedImage)p.getData());
+                        return;
+                    }
+                }
+
             case DefaultOnlineCommands.QUIT:
 
         }
