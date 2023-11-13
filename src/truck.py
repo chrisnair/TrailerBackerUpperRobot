@@ -142,28 +142,3 @@ class Truck:
     
     def cleanup(self):
         cleanup()
-
-
-
-
-
-
-if __name__ == "__main__":
-    from gamepad import Gamepad, Inputs
-    from data_client import DataClient
-    g = Gamepad()
-    car = Truck()
-    client = DataClient()
-    while True:
-        try:
-            steer = client.read_float_from_file("steering_angle.tbu")
-            drive = client.read_float_from_file("drive_power.tbu")
-
-            if steer is not None:
-                car.gamepad_steer(steer)
-            if drive is not None:
-                car.gamepad_drive(drive)
-                print(drive)
-        
-        except KeyboardInterrupt:
-           car.cleanup()

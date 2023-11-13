@@ -36,6 +36,15 @@
             "console": "integratedTerminal",
             "justMyCode": true,
             "sudo": true
+        },
+        {
+            "name": "Python: Start Robot Main",
+            "type": "python",
+            "request": "launch",
+            "program": "../TrailerBackerUpperRobot/src/driver.py",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "sudo": true
         }
     ]
     
