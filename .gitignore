@@ -29,3 +29,5 @@ replay_pid*
 
 #ignore .tbu if they end up in here somehow
 *.tbu
+#ignore .jpg
+*.jpg

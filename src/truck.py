@@ -71,7 +71,7 @@ class Truck:
         """
         JOYSTICK_MAX = 32767.0
         STEERING_RACK_MAX = 21
-        ANGLE_NORMALIZATION_CONSTANT = JOYSTICK_MAX / 60 # Ensures steering angle ranges from [-21, 21]
+        ANGLE_NORMALIZATION_CONSTANT = JOYSTICK_MAX / STEERING_RACK_MAX # Ensures steering angle ranges from [-21, 21]
         angle = stick_val / ANGLE_NORMALIZATION_CONSTANT
         self.set_steering_angle(angle)
 
@@ -91,7 +91,7 @@ class Truck:
         self.current_steering_angle = angle 
         
         angle = angle / LEFT_STEERING_RATIO if angle < 0 else angle / RIGHT_STEERING_RATIO
-        self.steer_motor.set_angle(angle+60)
+        self.steer_motor.set_angle(angle+DriveParams.STEERING_RACK_CENTER)
 
 
        
@@ -142,3 +142,27 @@ class Truck:
     
     def cleanup(self):
         cleanup()
+
+
+
+
+
+
+if __name__ == "__main__":
+    from gamepad import Gamepad, Inputs
+    g = Gamepad()
+    car = Truck()
+    while True:
+        g.update_input()
+        steer = g.get_stick_value(Inputs.LX)
+        if steer is not None:
+            car.gamepad_steer(steer)
+        """
+        if g.was_pressed(Inputs.R_BUMPER):
+            car.set_steering_angle(car.current_steering_angle+1)
+            print("angle:",car.current_steering_angle)   
+        elif g.was_pressed(Inputs.L_BUMPER):
+            car.set_steering_angle(car.current_steering_angle-1)
+            print(car.current_steering_angle)   
+        elif g.was_pressed(Inputs.B):
+        """
