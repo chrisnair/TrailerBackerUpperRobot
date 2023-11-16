@@ -99,8 +99,9 @@ for filename in images:
 	#cv2.waitKey(0)
 
 cv2.destroyAllWindows()
-
 h, w = image.shape[:2]
+
+	
 
 
 # Perform camera calibration by
