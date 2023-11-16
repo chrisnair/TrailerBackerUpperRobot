@@ -44,6 +44,8 @@ public class PacketProcessor {
      */
     private Thread processorThread;
 
+    private static final int MAX_PACKET_QUEUE = 200;
+
     /**
      * Creates a packet processor that reports to a host
      * @param host host that this processor makes changes to
@@ -92,11 +94,17 @@ public class PacketProcessor {
      */
     private void startProcessingPackets(){
         Runnable packetProcessor = () -> {
-            Printer.printIfVerbose("Starting processing packets");
+            
             while(running) {
+                 
                 if(!packets.isEmpty()){
-                    Printer.debugPrint("Packet queue= " + packets.size());
-                    Packet p = packets.poll();
+                    Packet p;
+                    
+                    do{
+                        Printer.printIfVerbose("Packet queue=" + packets.size());
+                        p = packets.poll();
+                    } while(packets.size() >= MAX_PACKET_QUEUE);
+
                     try {
                         if(p == null) continue;
                         Printer.printIfVerbose("Executing:  " + p);

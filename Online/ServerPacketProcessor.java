@@ -30,12 +30,12 @@ public class ServerPacketProcessor extends PacketProcessor{
             case DefaultOnlineCommands.CONTROL_SINGAL:
                 switch (p.getCommand().getCommandLine(1)) {
                     case DefaultOnlineCommands.STEERING_ANGLE : {
-                        System.out.println("Steering angle: " + p.getData());
+                        //System.out.println("Steering angle: " + p.getData());
                         writePacketDataToFile(p, "steering_angle.tbu");
                         return;
                     }
                     case DefaultOnlineCommands.THROTTLE:{
-                        System.out.println((double)p.getData());
+                        //System.out.println((double)p.getData());
                         writePacketDataToFile(p, "drive_power.tbu");
                         return;
                     }

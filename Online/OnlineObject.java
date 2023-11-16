@@ -171,7 +171,7 @@ public abstract class OnlineObject {
         if(o instanceof Packet){
             return (Packet)o;
         }
-        throw new NotAPacketException("OnlineObject received data that wasn't of type Packet" + o);
+        throw new NotAPacketException("OnlineObject received data that wasn't of type Packet" + o.getClass());
     }
 
     /**
