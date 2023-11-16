@@ -20,7 +20,7 @@ class Truck:
     The car class controls driving and steering of the car. Should only instantiate once.
     """
     def __new__(cls):
-        # Ensures only one instance of Car exists at one time. One machine shouldn't be controlling more than one car.
+        # Ensures only one instance of Truck exists at one time. One machine shouldn't be controlling more than one truck.
         if cls._self is None:
             cls._self = super().__new__(cls)
       

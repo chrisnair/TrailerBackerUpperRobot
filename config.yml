@@ -35,8 +35,8 @@ settings:
         # Framerate for OpenCV recording (this seems to produce wildly inconsistent result)
         framerate: 60
         # NOTE: I would not reccomend changing the resolution as no resolutions have been tested other than 640x480
-        resolution width: 1600
-        resolution height: 1200
+        resolution width: 800
+        resolution height: 600
 
     #Driving settings
     driving: 
@@ -57,7 +57,7 @@ settings:
         #Enable or disable streaming
         enabled: true
         #Streaming destination IP address. UDP Streaming also always streams to localhost.
-        destination ip: "192.168.2.185"
+        destination ip: "192.168.1.101"
         #Streaming destination port. Client is preconfigured with port 25565 by default. 
         destination port: 25565
         #Stream to web browser (TCP) or the client inluded in this repo (UDP)
