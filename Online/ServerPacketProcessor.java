@@ -47,6 +47,12 @@ public class ServerPacketProcessor extends PacketProcessor{
                         return;
                     }
                 }
+            case DefaultOnlineCommands.DEBUG:
+                switch(p.getCommand().getCommandLine(1)){
+                    case DefaultOnlineCommands.CAMERA_MODE_CHANGE:
+                        writePacketDataToFile(p,"stream_state.tbu");
+                        return;
+                }
 
             case DefaultOnlineCommands.QUIT:
 
