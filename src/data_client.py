@@ -21,7 +21,7 @@ class DataClient:
                 with open("/tbu_data/"+filename, 'r') as file:
                      raw = file.read()
                      if raw != '':
-                          data = bool(raw)
+                          data = int(raw)
                           return data
         
                      
