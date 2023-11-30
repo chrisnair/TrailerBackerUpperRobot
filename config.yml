@@ -63,6 +63,10 @@ settings:
         #Stream to web browser (TCP) or the client inluded in this repo (UDP)
         #NOTE: The web streaming is quite delayed because TCP bad
         web streaming: true # NOT YET IMPLEMENTED. THIS OPTION DOES NOTHING
+    
+    control:
+    #0 for controller, 1 for phone
+        control mode: 0
 
 
 

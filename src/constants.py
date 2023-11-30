@@ -25,6 +25,8 @@ camera = settings['camera']
 
 streaming = settings['streaming']
 
+control = settings['control']
+
 gpio = settings['gpio']
 
 class MainMode(Enum):
@@ -35,6 +37,10 @@ class MainMode(Enum):
     AUTO_FORWARD = 1
     AUTO_REVERSE = 2
     STOPPED = 3
+
+class ControlMode():
+    CURRENT_CONTROL_MODE = control["control mode"]
+
 
 class DriveParams:
     STEERING_RACK_CENTER       = steering["center"]

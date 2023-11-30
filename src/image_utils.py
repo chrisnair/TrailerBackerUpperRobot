@@ -26,16 +26,27 @@ def combine_images(pairs: list[tuple[cv2.Mat, float]]) -> cv2.Mat:
         base = cv2.addWeighted(base, 1, image, weight, 0)
     return base
 
+def generate_remapping_information(image):
+    filepath = './src/camera_calibration/calibrations/'
+    camera_matrix =  np.load(filepath+"matrix1600x1200.npz")['arr_0']
+    distortion_coefficients = np.load(filepath+"distortion1600x1200.npz")['arr_0']
 
-def undistort(distorted: cv2.Mat, image_remap_x, image_remap_y, roi)-> cv2.Mat:
-        
+    h, w = image.shape[:2]
+    newcameramtx, roi = cv2.getOptimalNewCameraMatrix(camera_matrix, distortion_coefficients, (w,h), 1, (w,h))
+    image_remap_x, image_remap_y = cv2.initUndistortRectifyMap(camera_matrix, distortion_coefficients, None, newcameramtx, (w,h), 5)
+    return image_remap_x, image_remap_y, roi
+
+def undistort(distorted: cv2.Mat, remapping_information: tuple)-> cv2.Mat:
+        image_remap_x, image_remap_y, roi = remapping_information
+  
         undistorted = cv2.remap(distorted, image_remap_x, image_remap_y, cv2.INTER_LINEAR)
         # crop the image
         x, y, w, h = roi
         undistorted = undistorted[y:y+h, x:x+w]
         return undistorted
 
-    
+
+
  
         
 

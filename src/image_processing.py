@@ -17,8 +17,8 @@ import cv2
 # Local Imports
 from constants import LaneBoundsRatio, ImageProcessingCalibrations
 from image_utils import weighted_center, filter_red
-from camera import Camera
-from streaming import UDPStreamer
+#from camera import Camera
+#from streaming import UDPStreamer
 
 # Global Configuration
 warnings.simplefilter('ignore', np.RankWarning)
@@ -33,10 +33,10 @@ def edge_detector(img: cv2.Mat) -> cv2.Mat:
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     except:
         gray = img # already gray if it throws exception I think
-    coeff = .85 # higher = ignore more stuff (noise filtering I think?)
+    coeff = .05 # higher = ignore more stuff (noise filtering I think?)
     thresh = int(max(gray[0]) * coeff) 
     blur = cv2.GaussianBlur(gray, (21, 21), 0)
-    _, binary = cv2.threshold(blur, thresh, 255, cv2.THRESH_BINARY)
+    _, binary = cv2.threshold(gray, thresh, 255, cv2.THRESH_BINARY)
     edges = cv2.Canny(binary, 200, 400)
     return edges
 

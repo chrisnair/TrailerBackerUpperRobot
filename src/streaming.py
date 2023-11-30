@@ -12,7 +12,7 @@ import math
 
 # Local imports
 from constants import Streaming
-from camera import Camera
+#from camera import Camera
 
 class FrameSegment:
     """
