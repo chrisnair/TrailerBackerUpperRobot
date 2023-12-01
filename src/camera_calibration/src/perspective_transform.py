@@ -1,3 +1,4 @@
+import time
 import numpy as np
 import glob
 import cv2
@@ -32,23 +33,23 @@ if __name__ == "__main__":
     newcameramtx, roi = cv2.getOptimalNewCameraMatrix(camera_matrix, distortion_coefficients, (w,h), 1, (w,h))
     image_remap_x, image_remap_y = cv2.initUndistortRectifyMap(camera_matrix, distortion_coefficients, None, newcameramtx, (w,h), 5)
 
-
-    undistorted = iu.undistort(start_img, image_remap_x, image_remap_y, roi)
+    remap_info = (image_remap_x, image_remap_y, roi)
+    undistorted = iu.undistort(start_img,remap_info)
 
     height, width, _ = undistorted.shape
 
-    tl = [width *2/9, height * 1/4]
-    tr = [width * 7/9, height * 1/4]
-    bl = [0, height* 3/4]
-    br = [width, height* 3/4]
+    tl = [width *2/9, height *.3]
+    tr = [width * 7/9, height * .3]
+    bl = [0, height* .45]
+    br = [width, height* .45]
 
 
     src = np.float32([tl, tr, bl, br])
 
     tl = [0,0]
-    tr = [start_img.shape[1], 0]
-    bl = [0, start_img.shape[0]]
-    br = [start_img.shape[1], start_img.shape[0]]
+    tr = [undistorted.shape[1], 0]
+    bl = [0, undistorted.shape[0]]
+    br = [undistorted.shape[1], undistorted.shape[0]]
 
     dst = np.float32([tl, tr, bl, br])
 
@@ -59,15 +60,17 @@ if __name__ == "__main__":
 
         if g.was_pressed(Inputs.A):
             img = cam.read()
-            undistorted = iu.undistort(img, image_remap_x, image_remap_y, roi)
+            undistorted = iu.undistort(img, remap_info)
 
             
             filename = "transformed_image_"+chr(image_num)+".jpg"
-
-            res = cv2.warpPerspective(undistorted, matrix, (start_img.shape[1], start_img.shape[0]) )
+            start = time.time()
+            res = cv2.warpPerspective(undistorted, matrix, (undistorted.shape[1], undistorted.shape[0]) )
+            end = time.time()
             
             cv2.imwrite(filepath + output+ filename, res)
             print("Saved file:", filepath + output +  filename)
+            print("Transformation took: " + str(end-start)+" seconds")
 
             image_num += 1
         elif g.was_pressed(Inputs.B):

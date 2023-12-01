@@ -24,10 +24,10 @@ if __name__ == "__main__":
 
         if g.was_pressed(Inputs.A):
             img = cam.read()
-            matrix = np.load(input_dir+"matrix.npz")['arr_0']
+            matrix = np.load(input_dir+"matrix800x600.npz")['arr_0']
             
 
-            distortion = np.load(input_dir+"distortion.npz")['arr_0']
+            distortion = np.load(input_dir+"distortion800x600.npz")['arr_0']
 
             h, w = img.shape[:2]
 	

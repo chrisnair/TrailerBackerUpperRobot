@@ -16,7 +16,7 @@ if __name__ == "__main__":
     from truck import Truck
     from gamepad import Gamepad, Inputs
     from data_client import DataClient
-    import ControlSignals
+    import control_signals
     # Trigger cleanup upon keyboard interrupt.
     def handler(signum: signal.Signals, stack_frame):
         global done
@@ -32,7 +32,7 @@ if __name__ == "__main__":
     #cam = Camera().start()
     car = Truck()
     client = DataClient()
-    ControlSignals.startListening()
+    control_signals.startListening()
 
     #def get_remap(image):
     #    filepath = './src/camera_calibration/calibrations/'
@@ -48,8 +48,8 @@ if __name__ == "__main__":
 
     print("Starting Main Loop!")
     while True:
-        steer = ControlSignals.getSteeringAngle()
-        drive = ControlSignals.getDrivePower()
+        steer = control_signals.getSteeringAngle()
+        drive = control_signals.getDrivePower()
 
         if steer is not None:
             car.phone_steer(steer)

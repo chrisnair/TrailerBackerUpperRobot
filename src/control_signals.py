@@ -40,7 +40,7 @@ def startUpdateLoop():
         if packet == "":
             continue
         updates = splitPacketsAndUpdate(packet)
-        print(updates)
+        #print(updates)
 
         for update in updates:
             getDataFromJSON(update)

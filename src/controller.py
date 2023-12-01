@@ -5,11 +5,14 @@ from gamepad import Gamepad, Inputs
 from mpc import Predicter
 from state_informer import StateInformer
 import sys
+import control_signals
+STOP = -1
 MANUAL = 0
 ASSISTED = 1
 AUTOMATIC = 2
 PHONE_CONTROL = 1
 GAMEPAD_CONTROL = 0
+print(ControlMode.CURRENT_CONTROL_MODE)
 
 g = Gamepad()
 class Controller:
@@ -51,7 +54,7 @@ class Controller:
         
     def manual(self):
         if self.driving_mode == MANUAL or self.driving_mode == ASSISTED:
-            if ControlMode.CURRENT_CONTROL_MODE == GAMEPAD_CONTROL:
+            if ControlMode.CURRENT_CONTROL_MODE==GAMEPAD_CONTROL:
 
 
                 try:
@@ -81,12 +84,14 @@ class Controller:
                 if drive is not None:
                     self.truck.gamepad_drive(drive)
 
-        elif ControlMode.CURRENT_CONTROL_MODE == PHONE_CONTROL:
-            pass
+            elif ControlMode.CURRENT_CONTROL_MODE==PHONE_CONTROL:
+                drive = control_signals.getDrivePower()
+                print(drive)
+                self.truck.set_drive_power(drive)
+                self.truck.phone_steer(control_signals.getSteeringAngle())
 
     def automatic(self):
         if self.exit_auto_flag:
-            print("exiting")
             self.exit_auto()
             return -1
         self.truck.set_drive_power(-.6)
@@ -94,7 +99,7 @@ class Controller:
         print(angle)
         self.truck.set_steering_angle(-angle)
     def drive(self):
-       
+        control_signals.startListening()
         self.stopped = False
         print("IO INITIATED")
         
