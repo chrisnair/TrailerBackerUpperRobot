@@ -1,6 +1,11 @@
 package Online;
 
+
+
+
+
 import java.io.Serializable;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -52,9 +57,13 @@ public final class Packet implements Serializable {
      * @param authorID id of the author of this packet
      */
     public Packet(Command c, Object data, UUID authorID){
+        this(c,data,authorID, UUID.randomUUID());
+    }
+
+    private Packet(Command c, Object data, UUID authorID, UUID packetID){
         this.command = c;
         this.authorID = authorID;
-        this.packetID = UUID.randomUUID();
+        this.packetID = packetID;
         this.data = data;
     }
 
@@ -103,11 +112,61 @@ public final class Packet implements Serializable {
         return this.packetID;
     }
 
+
     @Override
     public String toString(){
         return toShortenedString();
     }
 
+
+    public String toJSONString(){
+        String s = String.format("{\"command\":\"%s\", \"data\":\" %s\", \"packetID\":\"%s\", \"authID\":\"%s\"}", command.toString(), data, packetID, authorID);
+        System.out.println(s);
+        return s;
+
+    }
+
+    public static String getDataFromJSONString(String jString, String field){
+        int start = jString.indexOf(field) + field.length() + 3;
+        return jString.substring(start, start + jString.substring(start).indexOf('"'));
+    }
+    /*
+    public static Map<String, Object> getMapFromjString(String jString){
+        String currString = jString;
+        while (jString.length() != 0){
+            Pair<String,String> strings = getFirstWordInQuotes(currString);
+            currString = strings.second;
+
+        }
+    }
+
+    public static Pair<String,String> getFirstWordInQuotes(String s){
+        int start = s.indexOf('"') + 1;
+        int end = s.substring(start).indexOf('"');
+        if(start == 0 || end == -1){
+            return new Pair("", "");
+        }
+        return new Pair(s.substring(start,end), s.substring(end+1));
+    }*/
+    public static Packet fromJSONString(String jString){
+        String jsonData = getDataFromJSONString(jString,"data");
+        Command c = new Command(getDataFromJSONString(jString,"command"));
+        UUID authID = getUUIDFromString(getDataFromJSONString(jString, "authID"));
+        UUID packetID = getUUIDFromString(getDataFromJSONString(jString,"packetID"));
+            try {
+                double data = Double.parseDouble(jsonData);
+                return new Packet(c,data,authID,packetID);
+            } catch(NumberFormatException e){
+                return new Packet(c,jsonData,authID,packetID);
+            }
+    }
+
+    private static UUID getUUIDFromString(String id){
+        if(id == null || id.equals("null")){
+            return null;
+        }
+        return UUID.fromString(id);
+    }
     public String toLongString(){
         return "Packet{PacketID: " + this.packetID + ", Command: " + command.getCommandString() + ", Data: " + this.data +
                 ", AuthID: " + this.authorID + ", Type: " + command.getTypeString() + "}";
@@ -155,3 +214,5 @@ public final class Packet implements Serializable {
         return str.substring(str.length()-12);
     }
 }
+
+

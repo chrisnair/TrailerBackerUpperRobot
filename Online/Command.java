@@ -58,34 +58,32 @@ public final class Command implements Serializable {
         return result.toString();
     }
 
+    public String toString(){
+        return getCommandString();
+    }
+
     /**
      * Converts the type of this message (given in the commands) to a readable string and returns it
      * @return the readable representation of the type
      */
     public String getTypeString(){
         switch(getType()){
-            case DefaultOnlineCommands.SIMPLE_TEXT : {
+            case DefaultOnlineCommands.SIMPLE_TEXT: {
                 return "simpleTextMessage";
             }
-            case DefaultOnlineCommands.VOID : {
+            case DefaultOnlineCommands.VOID: {
                 return "voidMessage";
             }
-            case DefaultOnlineCommands.REQUEST : {
+            case DefaultOnlineCommands.REQUEST: {
                 return "request " + getCommandLine(1);
             }
-            case DefaultOnlineCommands.ANSWER : {
+            case DefaultOnlineCommands.ANSWER: {
                 return "answer " + getCommandLine(1);
             }
-            case DefaultOnlineCommands.CONTROL_SINGAL : {
-                return "control " + getCommandLine(1);
-            }
-            case DefaultOnlineCommands.INFO : {
-                return "info " + getCommandLine(1);
-            }
-            case DefaultOnlineCommands.QUIT : {
+            case DefaultOnlineCommands.QUIT: {
                 return "quit";
             }
-            default :{
+            default: {
                 return getType() + " (Non-default or unknown)";
             }
         }
@@ -97,6 +95,9 @@ public final class Command implements Serializable {
      * @return type of command
      */
     public String getType() {
+        if(commands.size() == 0 ){
+            return "";
+        }
         return commands.get(0);
     }
 

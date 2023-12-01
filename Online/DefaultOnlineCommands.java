@@ -48,8 +48,12 @@ public class DefaultOnlineCommands {
     public static final String PICTURE = "pic;";
 
     public static final String INFO = "inf;";
+    public static final String CONTROL_SIGNAL = "cnt;";
 
-    public static final String CONTROL_SINGAL = "cnt;";
+    public static final String DEBUG = "dbg;";
+
+    public static final String CAMERA_MODE_CHANGE = "cmc;";
+
 
     /**
      * converts a UUID to a IDIdentifier, which is an UUID in the form of a command identifier
@@ -70,8 +74,8 @@ public class DefaultOnlineCommands {
         boolean second = command.charAt(13) == '-';
         boolean third = command.charAt(18) == '-';
         boolean fourth = command.charAt(23) == '-';
-        Printer.debugPrint(command);
-        Printer.debugPrint(first + ", " +second + ", " +third + ", " +fourth );
+        //Printer.debugPrint(command);
+        //Printer.debugPrint(first + ", " +second + ", " +third + ", " +fourth );
         return  first && second && third && fourth;
     }
 }

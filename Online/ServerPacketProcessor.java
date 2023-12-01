@@ -7,50 +7,52 @@ import java.io.FileWriter;
 import java.io.IOException;
 
 /**
- * Packet processor meant for the ClientHandlers that the Server class aggregates
+ * Packet processor meant for the ClientHandlers that the Server class
+ * aggregates
  *
  * @author Joshua Bergthold
  */
-public class ServerPacketProcessor extends PacketProcessor{
+public class ServerPacketProcessor extends PacketProcessor {
 
     ClientHandler ch;
+
     public ServerPacketProcessor(ClientHandler host) {
         super(host);
         ch = host;
     }
 
     @Override
-    public void executePacket(Packet p){
-        Printer.debugPrint("ServerPP level: " + p.toShortenedString());
-        switch(p.getCommand().getType()) {
+    public void executePacket(Packet p) {
+        // Printer.debugPrint("ServerPP level: " + p.toShortenedString());
+        switch (p.getCommand().getType()) {
             case DefaultOnlineCommands.SIMPLE_TEXT:
                 Printer.printIfVerbose("Distributing text message: " + Packet.shortenedID(p.getPacketID()));
                 ch.sendForServerToDistribute(p);
                 return;
-            case DefaultOnlineCommands.CONTROL_SINGAL:
+            case DefaultOnlineCommands.CONTROL_SIGNAL:
                 switch (p.getCommand().getCommandLine(1)) {
-                    case DefaultOnlineCommands.STEERING_ANGLE : {
-                        //System.out.println("Steering angle: " + p.getData());
+                    case DefaultOnlineCommands.STEERING_ANGLE: {
+                        // System.out.println("Steering angle: " + p.getData());
                         writePacketDataToFile(p, "steering_angle.tbu");
                         return;
                     }
-                    case DefaultOnlineCommands.THROTTLE:{
-                        //System.out.println((double)p.getData());
+                    case DefaultOnlineCommands.THROTTLE: {
+                        // System.out.println((double)p.getData());
                         writePacketDataToFile(p, "drive_power.tbu");
                         return;
                     }
                 }
             case DefaultOnlineCommands.INFO:
                 switch (p.getCommand().getCommandLine(1)) {
-                    case DefaultOnlineCommands.PICTURE:{
-                        //System.out.println((BufferedImage)p.getData());
+                    case DefaultOnlineCommands.PICTURE: {
+                        // System.out.println((BufferedImage)p.getData());
                         return;
                     }
                 }
             case DefaultOnlineCommands.DEBUG:
-                switch(p.getCommand().getCommandLine(1)){
+                switch (p.getCommand().getCommandLine(1)) {
                     case DefaultOnlineCommands.CAMERA_MODE_CHANGE:
-                        writePacketDataToFile(p,"stream_state.tbu");
+                        writePacketDataToFile(p, "stream_state.tbu");
                         return;
                 }
 
@@ -61,15 +63,8 @@ public class ServerPacketProcessor extends PacketProcessor{
         super.executePacket(p);
     }
 
-    public void writePacketDataToFile(Packet p, String filename){
-        File outputFile = new File("/tbu_data/"+filename);
-                        try {
-                            FileWriter writer = new FileWriter(outputFile);
-                            writer.write(p.getData().toString());
-                            writer.close();
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
+    public void writePacketDataToFile(Packet p, String filename) {
+        ch.sendPacketToOutput(p);
     }
 
 }
