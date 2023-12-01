@@ -28,8 +28,8 @@ def combine_images(pairs: list[tuple[cv2.Mat, float]]) -> cv2.Mat:
 
 def generate_remapping_information(image):
     filepath = './src/camera_calibration/calibrations/'
-    camera_matrix =  np.load(filepath+"matrix1600x1200.npz")['arr_0']
-    distortion_coefficients = np.load(filepath+"distortion1600x1200.npz")['arr_0']
+    camera_matrix =  np.load(filepath+"matrix800x600.npz")['arr_0']
+    distortion_coefficients = np.load(filepath+"distortion800x600.npz")['arr_0']
 
     h, w = image.shape[:2]
     newcameramtx, roi = cv2.getOptimalNewCameraMatrix(camera_matrix, distortion_coefficients, (w,h), 1, (w,h))
@@ -59,8 +59,8 @@ def filter_red(img: cv2.Mat) -> cv2.Mat:
     # Bitwise complement operator. Flips each bit for each element in the matrix.
     invert = ~img
     hsv = cv2.cvtColor(invert, cv2.COLOR_BGR2HSV)
-    lower_cyan = np.array([85, 100, 40]) # Lower bound of HSV values to include in mask
-    upper_cyan = np.array([95, 255, 255]) # Upper bound of HSV values to include in mask
+    lower_cyan = np.array([45, 150, 40]) # Lower bound of HSV values to include in mask
+    upper_cyan = np.array([100, 255, 255]) # Upper bound of HSV values to include in mask
     # Clamp to certain cyan shades.
     mask = cv2.inRange(hsv, lower_cyan, upper_cyan)
     return mask

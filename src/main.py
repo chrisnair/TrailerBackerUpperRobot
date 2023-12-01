@@ -1,8 +1,9 @@
 from truck import Truck
 from camera import Camera
-from state_informer import StateInformer
+from controller import Controller
 
 if __name__ == '__main__':
-    cam = Camera().start()
-    truck = Truck()
-    truck.start()
+    Camera().start()
+    Controller().drive()
+
+   

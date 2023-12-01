@@ -8,8 +8,9 @@ from constants import ImageProcessingCalibrations as Calibrations
 #from speedometer import Speedometer
 import image_processing as ip
 import image_utils as iu
-#from camera import Camera
-#from truck import Truck
+from camera import Camera
+from truck import Truck
+from streaming import UDPStreamer
 
 # TODO: Come up with a nice name for this module and class
 # Working name: StateInformer get it like state informer like a spy? It's so funny.
@@ -23,14 +24,17 @@ class StateInformer:
         # "pos" refers to coordinates in image of the form (x-pixel, y-pixel)
         self.thread: Thread = Thread(target = self.update_continuosly)
         #self.speedometer: Speedometer = Speedometer().start()
-        #self.cam: Camera = Camera()
-        #self.truck: Truck = Truck()
+        self.cam: Camera = Camera()
 
         self.lane_center_pos: tuple[int, int] = (0,0)
         self.lanes: list[tuple[float, float, float, float]] = []
 
         #self.frame: cv2.Mat = self.cam.read() # ensure frame is non-None at start
-        self.frame = cv2.imread("./src/frames/frame174.jpg")
+        self.frame = self.cam.read()
+        self.remapping_information = iu.generate_remapping_information(self.frame)
+        self.frame = iu.undistort(self.frame, self.remapping_information)
+
+        self.truck = Truck()
         
         self.steering_angle: float = 0 # alpha
         self.car_lane_angle: float = 0 # theta1
@@ -49,14 +53,11 @@ class StateInformer:
         self.stopped: bool = False
         
         # image correction
-        filepath = './src/camera_calibration/calibrations/'
-        camera_matrix =  np.load(filepath+"matrix800x600.npz")['arr_0']
-        distortion_coefficients = np.load(filepath+"distortion800x600.npz")['arr_0']
+       
 
-        h, w = self.frame.shape[:2]
-        newcameramtx, self.roi = cv2.getOptimalNewCameraMatrix(camera_matrix, distortion_coefficients, (w,h), 1, (w,h))
-        self.image_remap_x, self.image_remap_y = cv2.initUndistortRectifyMap(camera_matrix, distortion_coefficients, None, newcameramtx, (w,h), 5)
+        self.streamer = UDPStreamer()
 
+        
     # def update_vel(self):
     #     self.vel = self.speedometer.read()
     
@@ -70,7 +71,7 @@ class StateInformer:
         trailer_to_cam_line = math.dist(self.trailer_pos, self.CAMERA_LOCATION)
         trailer_to_frame_bottom_line = cam_y - trailer_y
         rad = math.acos(trailer_to_frame_bottom_line / trailer_to_cam_line)
-        deg = math.degrees(rad)
+        deg = -math.degrees(rad)
         if self._is_on_left(self.trailer_pos):
             deg *= -1 # angles on left are  represetned with negative
         self.hitch_angle = deg
@@ -220,7 +221,7 @@ class StateInformer:
 
     def update_steering_angle(self):
         #Relies on: car.set_steering_angle()
-        self.steering_angle = 0
+        self.steering_angle = self.truck.current_steering_angle
     
     def get_steering_angle(self):
         return self.steering_angle
@@ -229,7 +230,7 @@ class StateInformer:
         # Relies on: update_frame()
         img = self.frame
         edges = ip.edge_detector(img)
-        cropped_edges = ip.region_of_interest(edges)
+        cropped_edges = ip.region_of_interest(edges,True)
         line_segments = ip.detect_line_segments(cropped_edges)
         lane_lines = ip.average_slope_intercept(img, line_segments)
         self.lanes = lane_lines
@@ -294,11 +295,20 @@ class StateInformer:
 
         self.update_trailer_deviation()
         self.update_car_deviation()
+        red = iu.filter_red(self.frame)
+        x,y = self.trailer_pos
+        camera_x, camera_y = self.CAMERA_LOCATION
+        trailer = ip.display_trailer_info(self.frame, self.hitch_angle,[camera_x,camera_y,x,y])
+        #self.streamer.stream_image(ip.display_lanes_and_path(self.frame, self.hitch_angle, self.lanes))
+        edges = ip.edge_detector(self.frame)
+        cropped_edges = ip.region_of_interest(edges,True)
+        combined = ip.display_lanes_and_path(trailer, self.steering_angle,self.lanes)
+        self.streamer.stream_image(combined)
         
 
     def update_frame(self):
-        #img = self.cam.read()
-        #self.frame = iu.undistort(img, self.image_remap_x, self.image_remap_y, self.roi)
+        img = self.cam.read()
+        self.frame = iu.undistort(img, self.remapping_information)
         self.frame = self.frame
     
     def get_frame(self):
@@ -307,8 +317,10 @@ class StateInformer:
     def update_continuosly(self):
         while not self.stopped:
             self.update_state()
+            
     
     def start(self):
+        print("starting thread")
         self.thread.start()
         return self
 

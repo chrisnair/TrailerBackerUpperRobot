@@ -29,14 +29,17 @@ warnings.simplefilter('ignore', np.RankWarning)
 
 # Returns an image filtered for edges.
 def edge_detector(img: cv2.Mat) -> cv2.Mat:
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    thresholded_image = cv2.threshold(gray,    200, 255, cv2.THRESH_BINARY)[1]
+    filtered_image = cv2.bitwise_and(gray, thresholded_image)
     try:
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     except:
         gray = img # already gray if it throws exception I think
-    coeff = .05 # higher = ignore more stuff (noise filtering I think?)
+    coeff = .25 # higher = ignore more stuff (noise filtering I think?)
     thresh = int(max(gray[0]) * coeff) 
-    blur = cv2.GaussianBlur(gray, (21, 21), 0)
-    _, binary = cv2.threshold(gray, thresh, 255, cv2.THRESH_BINARY)
+    blur = cv2.GaussianBlur(filtered_image, (21, 21), 0)
+    _, binary = cv2.threshold(blur, thresh, 255, cv2.THRESH_BINARY)
     edges = cv2.Canny(binary, 200, 400)
     return edges
 
@@ -245,7 +248,10 @@ def steering_info(img: cv2.Mat) -> tuple[float, list[tuple[float, float, float, 
 
 # Makes a reduced opacity image containing lane lines and the calculated path. 
 def display_lanes_and_path(img: cv2.Mat, steering_angle_deg: float, lane_lines: list[tuple[float, float, float, float]]) -> cv2.Mat:
-    height, width, _ = img.shape
+    try:
+        height, width, _ = img.shape # CHANGE
+    except:
+        height, width = img.shape
     steering_angle_radians = math.radians(steering_angle_deg + 60)
 
     # Calculations for the center path.

@@ -20,10 +20,11 @@ ASSISTED  = 2
 
 
 class Truck:
-    _self = None
     """
     The car class controls driving and steering of the car. Should only instantiate once.
     """
+    _self = None
+    
     def __new__(cls):
         # Ensures only one instance of Truck exists at one time. One machine shouldn't be controlling more than one truck.
         if cls._self is None:
@@ -42,9 +43,9 @@ class Truck:
         self.steer_motor: Servo = Servo(GPIO.SERVO_MOTOR_PIN)
         self.drive_motor: DCMotor = DCMotor(GPIO.DRIVE_MOTOR_POWER_PIN, GPIO.DRIVE_MOTOR_FORWARD_PIN, GPIO.DRIVE_MOTOR_REVERSE_PIN)
         self.jackknifed = False
-        self.io_thread = Thread(target=self._handle_io)
-        self.stopped = True
+        
         self.driving_mode = MANUAL
+        
 
     def gamepad_drive(self, trigger_val: int):
         """
@@ -102,29 +103,7 @@ class Truck:
         self.steer_motor.set_angle(angle+DriveParams.STEERING_RACK_CENTER)
 
 
-    def _handle_io(self):
-        if ControlMode.CURRENT_CONTROL_MODE == 0:
-            while not self.stopped:
-                if self.driving_mode == MANUAL or self.driving_mode == ASSISTED:
-                    g.update_input()
-                    if g.was_pressed(Inputs.B):
-                        self.stopped = True
-                        cleanup()
-                        sys.exit()
-                    if g.was_pressed(Inputs.A):
-                        self.driving_mode = AUTOMATIC
-                    steer = g.get_stick_value(Inputs.LX)
-                    if steer is not None:
-                        self.gamepad_steer(steer)
-                    drive = g.get_stick_value()
-                    if drive is not None:
-                        self.gamepad_drive(drive)
-        elif ControlMode.CURRENT_CONTROL_MODE == 1:
-            pass # wait for server to be up and good
-    def start(self):
-        self.stopped = False
-        self.io_thread.start()
-    
+   
     
 
 

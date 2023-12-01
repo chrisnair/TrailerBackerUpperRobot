@@ -12,6 +12,7 @@ class Predicter:
     def __init__(self, state_informer: StateInformer):
         self.state_informer = state_informer
         self.trailer_deviation = state_informer.get_trailer_deviation()
+        print(self.trailer_deviation)
         self.trailer_lane_angle = state_informer.get_trailer_lane_angle()
         self.hitch_angle = state_informer.get_hitch_angle()
         self.x = 0
@@ -71,19 +72,23 @@ class Predicter:
         return -str_min_fine, cost
     
     def predict_fast(self):
+        state_vector = [self.x, self.state_informer.get_trailer_deviation(), self.state_informer.get_trailer_lane_angle() * pi / 180, self.state_informer.get_hitch_angle() * pi / 180]
+
         str = 0
         v1 = 1.5
         t0=0
-        y0=self.state_vector
-        tstep=100
+
+        y0=state_vector
+        tstep=3
         
         steps = 0
         f_prev = 99999
         delta_str = 99999
         # Newton's method
-        print("newton")
+        #print(self.state_informer.trailer_deviation)
+        #print("newton")
 
-        print(y0)
+        #print(y0)
         while True:
             u = [v1, str * pi / 180]
             [t, y, f, str_next] = func_eval(t0, y0, u, tstep)

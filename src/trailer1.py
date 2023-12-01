@@ -101,12 +101,15 @@ def compute_cost(y):
     theta2_target = y2[0]
     beta2_target = 0
 
-    w = [1, 1, 1]
+    
+    hitch_angle_weight= 5
+    trailer_displacement_weight = 30
+    trailer_lane_angle_weight = 20
 
     cost = (
-        w[0] * (y2_final - y2_target) ** 2
-        + w[1] * (theta2_final - theta2_target) ** 2
-        + w[2] * (beta2_final - beta2_target) ** 2
+        trailer_displacement_weight * (y2_final - y2_target) ** 2 # displacement
+        + trailer_lane_angle_weight * (theta2_final - theta2_target) ** 2 # lane angle
+        + hitch_angle_weight * (beta2_final - beta2_target) ** 2 # hitch angle
     )
     return cost
 

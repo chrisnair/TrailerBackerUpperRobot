@@ -12,7 +12,7 @@ import math
 
 # Local imports
 from constants import Streaming
-#from camera import Camera
+from camera import Camera
 
 class FrameSegment:
     """
@@ -48,8 +48,8 @@ class HelperObject:
     """
     def __init__(self):
         self.stopped=False
-        self.camera = Camera()
-        self.frame = self.camera.read()
+        #self.camera = Camera()
+        #self.frame = self.camera.read()
     
     def video_feed_helper(self):
         return Response(self.gen_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
@@ -125,6 +125,7 @@ class UDPStreamer():
         Target of streaming thread.
         """
         while self.streaming_enabled and (not self.stopped):
+                print("send")
                 self.frame_segment.udp_frame(self.frame)
 
     # Enables threaded mode for the Streamer. This seemed to have been working fine but then I started seeing weird
