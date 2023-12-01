@@ -26,8 +26,8 @@ if __name__ == "__main__":
     print("STARTED")
     start_img = cam.read()
 
-    camera_matrix =  np.load(filepath+calibrations+"matrix.npz")['arr_0']
-    distortion_coefficients = np.load(filepath+calibrations+"distortion.npz")['arr_0']
+    camera_matrix =  np.load(filepath+calibrations+"matrix800x600.npz")['arr_0']
+    distortion_coefficients = np.load(filepath+calibrations+"distortion800x600.npz")['arr_0']
     h, w = start_img.shape[:2]
     newcameramtx, roi = cv2.getOptimalNewCameraMatrix(camera_matrix, distortion_coefficients, (w,h), 1, (w,h))
     image_remap_x, image_remap_y = cv2.initUndistortRectifyMap(camera_matrix, distortion_coefficients, None, newcameramtx, (w,h), 5)
