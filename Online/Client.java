@@ -1,5 +1,7 @@
 package Online;
 
+
+
 import java.io.IOException;
 import java.net.Socket;
 import java.util.UUID;
@@ -10,6 +12,9 @@ import java.util.UUID;
  */
 public class Client extends OnlineObject {
 
+    String address;
+    int port;
+
 
     /**
      * Creates a client object that connects to a server with the specified port and address.
@@ -19,7 +24,17 @@ public class Client extends OnlineObject {
     public Client(String address, int port){
         super();
         setPacketProcessor();
-        establishConnection(address, port);
+        this.address = address;
+        this.port = port;
+    }
+
+    public boolean attemptConnection(){
+        try {
+            establishConnection(address, port);
+            return true;
+        } catch (Exception e){
+            return false;
+        }
     }
 
     /**
@@ -43,26 +58,67 @@ public class Client extends OnlineObject {
     private void establishConnection(String address, int port){
         //create a new socket that connects to the port and address
         //need to catch a couple of exceptions
-        try{
-            s = new Socket(address, port);
-        } catch(IOException e){
-            e.printStackTrace();
-            System.exit(1);
+        while (true) {
+            try {
+                System.out.println("Trying to connect");
+                s = new Socket(address, port);
+                System.out.println("Connected, initializing");
+                initializeSocket(s);
+                break;
+            } catch (IOException e){
+                try {
+                    System.out.println("Failed trying again");
+                    e.printStackTrace();
+                    Thread.sleep(1000);
+                } catch (InterruptedException ex) {
+                    throw new RuntimeException(ex);
+                }
+                System.out.println("Connection refused, trying again");
+            }
         }
 
-        initializeSocket(s);
+    }
+
+    public void sendGyroReading(double reading){
+        if(isRunning()) {
+            Packet p = new Packet(
+                    DefaultOnlineCommands.CONTROL_SIGNAL + DefaultOnlineCommands.STEERING_ANGLE,
+                    reading,
+                    getID()
+            );
+            //Log.d("Sending gyroreading", "Packet constructed, sending...");
+            this.sendAppData(p);
+        }
+    }
+
+    @Override
+    public void disconnect(){
+        super.disconnect();
+
     }
 
 
+    public void sendGasReading(double gasVal) {
+        if(isRunning()){
+            Packet p = new Packet(
+                    DefaultOnlineCommands.CONTROL_SIGNAL + DefaultOnlineCommands.THROTTLE,
+                    gasVal,
+                    getID()
+            );
+            //Log.d("Sending gyroreading", "Packet constructed, sending...");
+            this.sendAppData(p);
+        }
+    }
 
+    public void requestCameraChange(boolean state){
+        if(isRunning()){
+            Packet p = new Packet(
+                    DefaultOnlineCommands.DEBUG + DefaultOnlineCommands.CAMERA_MODE_CHANGE,
+                    state? 1 : 0,
+                    this.getID()
+            );
+            this.sendAppData(p);
+        }
 
-
-
-
-
-
-
-
-
-
+    }
 }

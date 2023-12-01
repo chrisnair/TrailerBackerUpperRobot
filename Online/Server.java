@@ -1,8 +1,11 @@
 package Online;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 /**
@@ -11,8 +14,7 @@ import java.util.*;
  *
  * @author Joshua Bergthold
  */
-public class Server{
-
+public class Server {
 
     /**
      * Default address that is used when none is given
@@ -46,32 +48,53 @@ public class Server{
 
     Thread connectionListener;
 
-
+    private OutputStream out;
+    private InputStream in;
 
     /**
      * Constructs a Server object with the default port (1452)
      */
-    public Server(){
+    public Server() {
         this(1452);
     }
 
     /**
      * Constructs a Server with a specified port
+     * 
      * @param port desired port of the server
      */
-    public Server(int port){
+    public Server(int port) {
         this.port = port;
         this.clientList = new LinkedList<>();
         this.validIDs = new ArrayList<>();
         this.id = UUID.randomUUID();
         initializeServer();
+        connectToOutput();
 
     }
 
+    private void connectToOutput() {
+        Runnable r = () -> {
+            try (ServerSocket ss = new ServerSocket(1103)) {
+                Socket s = ss.accept();
+                this.out = s.getOutputStream();
+                this.in = s.getInputStream();
+                Printer.debugPrint("Output is connected!");
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        };
+        Thread connector = new Thread(r);
+
+        connector.start();
+    }
+
     /**
-     * Creates the underlying ServerSocket which has the ability to make Client connections
+     * Creates the underlying ServerSocket which has the ability to make Client
+     * connections
      */
-    private void initializeServer(){
+    private void initializeServer() {
         try {
             this.ss = new ServerSocket(this.port);
         } catch (IOException e) {
@@ -81,26 +104,28 @@ public class Server{
     }
 
     /**
-     * Begins the server loop and creates threads for listening for Clients and processing data received
+     * Begins the server loop and creates threads for listening for Clients and
+     * processing data received
      */
-    public void start(){
+    public void start() {
         running = true;
         listenForConnections();
     }
 
     /**
-     * Starts the thread that constantly looks for Clients attempting a connection to the Server
+     * Starts the thread that constantly looks for Clients attempting a connection
+     * to the Server
      */
-    private void listenForConnections(){
+    private void listenForConnections() {
         Runnable r = () -> {
             Printer.printIfVerbose("Starting listening for connections");
-            while(running){
-                try{
-                   ClientHandler c = initializeClientHandler(ss.accept());
-                   addClient(c);
-                   Printer.printIfVerbose("New client joined.");
-                   c.startProcessingPackets();
-                } catch(IOException e){
+            while (running) {
+                try {
+                    ClientHandler c = initializeClientHandler(ss.accept());
+                    addClient(c);
+                    Printer.printIfVerbose("New client joined.");
+                    c.startProcessingPackets();
+                } catch (IOException e) {
                     Printer.errorPrintIfVerbose("Error during creation of server");
                     e.printStackTrace();
                     System.exit(1);
@@ -116,42 +141,56 @@ public class Server{
 
     /**
      * Override this method to change what kind of handlers this server creates
+     * 
      * @param s Socket that the handler is given
      * @return the ClientHandler that was initialized
      */
-    protected ClientHandler initializeClientHandler(Socket s){
+    protected ClientHandler initializeClientHandler(Socket s) {
         return new ClientHandler(s, this);
 
     }
 
-    /**
-     * Adds a ClientHandler to this server
-     * @param c client to be added
-     */
-    protected void addClient(ClientHandler c){
-        clientList.add(c);
-    }
+    public void sendPacketToOutput(Packet p) {
+        Printer.debugPrint("Sending to output side" + p);
+        try {
+            String msg = p.toJSONString();
+            if (out != null)
+                out.write(p.toJSONString().getBytes(StandardCharsets.UTF_8), 0, msg.length());
+        } catch (IOException e) {
 
-
-    /**
-     * Takes a packet and sends it to every client this server has connected
-     * @param p packet to be distributed
-     */
-    public void sendPacketToAllClients(Packet p){
-        for(ClientHandler c: clientList){
-            c.sendMessage(p);
+            out = null;
+            in = null;
+            connectToOutput();
         }
     }
 
+    /**
+     * Adds a ClientHandler to this server
+     * 
+     * @param c client to be added
+     */
+    protected void addClient(ClientHandler c) {
+        clientList.add(c);
+    }
+
+    /**
+     * Takes a packet and sends it to every client this server has connected
+     * 
+     * @param p packet to be distributed
+     */
+    public void sendPacketToAllClients(Packet p) {
+        for (ClientHandler c : clientList) {
+            c.sendMessage(p);
+        }
+    }
 
     /**
      *
      * @return true if the server is running
      */
-    public boolean isRunning(){
+    public boolean isRunning() {
         return running;
     }
-
 
     /**
      * @return the ID of this server
@@ -160,19 +199,19 @@ public class Server{
         return this.id;
     }
 
-
     /**
      * Disconnects a client and removes them from the server
+     * 
      * @param c client to be disconnected
      */
-    public void disconnectClient(ClientHandler c){
+    public void disconnectClient(ClientHandler c) {
         clientList.remove(c);
 
         boolean handlerRemoved = validIDs.remove(c.getID());
         boolean clientRemoved = validIDs.remove(c.getCallerID());
         Printer.printIfVerbose(validIDs);
-        Printer.printIfVerbose("Handler ID was " + (handlerRemoved ? "": "not") + "removed");
-        Printer.printIfVerbose("Client ID was " + (clientRemoved ? "": "not") + "removed");
+        Printer.printIfVerbose("Handler ID was " + (handlerRemoved ? "" : "not") + "removed");
+        Printer.printIfVerbose("Client ID was " + (clientRemoved ? "" : "not") + "removed");
         Printer.printIfVerbose(validIDs);
         c.disconnect();
     }
@@ -180,22 +219,20 @@ public class Server{
     /**
      * Stops the server and disconnects all of its clients
      */
-    public void stop(){
+    public void stop() {
         System.out.println("Stopping server...");
-        for(ClientHandler c: clientList){
+        for (ClientHandler c : clientList) {
             disconnectClient(c);
 
         }
         connectionListener.interrupt();
 
-
     }
 
-    public UUID generateNewID(){
+    public UUID generateNewID() {
         UUID newID = UUID.randomUUID();
         validIDs.add(newID);
         return newID;
     }
-
 
 }

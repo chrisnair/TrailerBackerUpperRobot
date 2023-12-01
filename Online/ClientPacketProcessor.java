@@ -25,6 +25,7 @@ public class ClientPacketProcessor extends PacketProcessor{
                 if(!p.getAuthorID().equals(host.getID())){
                     System.out.println("Message from " + Packet.shortenedID(p.getAuthorID())+ ": " + p.getData());
                 }
+                System.out.println(p.getData());
 
 
                 return;
