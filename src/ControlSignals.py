@@ -57,6 +57,10 @@ def startListening():
     thread.start()
 
 
+def sendSuggestedAngle(angle):
+    ControlSignals.sock.sendall("{\"command\":\"inf;str;\", \"data\":\"" + str(angle) + "\", \"packetID\":\"null\", \"authID\":\"null\"}")
+
+
 def initSock():
     if ControlSignals.sock is None:
         ControlSignals.sock = socket()
