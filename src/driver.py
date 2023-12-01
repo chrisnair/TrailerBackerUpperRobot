@@ -1,13 +1,10 @@
 import signal
-<<<<<<< HEAD
 import time
-=======
 from streaming import UDPStreamer
 from camera import Camera
 import cv2
 import numpy as np
 import image_utils as iu
->>>>>>> 794ac59c860b3b9fd48ef27ef954d7c8558c1b1b
 
 def cleanup():
     car.cleanup()
@@ -35,11 +32,7 @@ if __name__ == "__main__":
     #cam = Camera().start()
     car = Truck()
     client = DataClient()
-<<<<<<< HEAD
     ControlSignals.startListening()
-=======
-    #streamer = UDPStreamer().start()
->>>>>>> 794ac59c860b3b9fd48ef27ef954d7c8558c1b1b
 
     #def get_remap(image):
     #    filepath = './src/camera_calibration/calibrations/'
@@ -55,21 +48,8 @@ if __name__ == "__main__":
 
     print("Starting Main Loop!")
     while True:
-<<<<<<< HEAD
         steer = ControlSignals.getSteeringAngle()
         drive = ControlSignals.getDrivePower()
-=======
-        steer = client.read_float_from_file("steering_angle.tbu")
-        drive = client.read_float_from_file("drive_power.tbu")
-        #stream_state = client.read_bool_from_file("stream_state.tbu")
-        #print(stream_state)
-        #image = cam.read()
-        #if stream_state:
-        #    streamer.stream_image(iu.undistort(image, *get_remap(image)))
-        #else:
-        #    streamer.stream_image(image)
-
->>>>>>> 794ac59c860b3b9fd48ef27ef954d7c8558c1b1b
 
         if steer is not None:
             car.phone_steer(steer)

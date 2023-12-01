@@ -326,10 +326,12 @@ class StateInformer:
 
     def stop(self):
         #self.speedometer.stop()
+        self.cam.stop()
         print("Releasing state informer resources... ", end="")
         self.stopped = True
         self.thread.join()
         print("DONE")
+        self.streamer.stop()
 
 
 
