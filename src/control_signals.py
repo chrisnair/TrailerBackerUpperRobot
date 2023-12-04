@@ -18,6 +18,8 @@ def getDataFromJSON(jsonstr):
             ControlSignals.gasVal = float(packet["data"])
         elif "cmc;" in command:
             ControlSignals.cameraState = packet["data"]
+        elif "cmch;" in command:
+            ControlSignals.controlState = int(packet["data"])
 
 
 
@@ -87,9 +89,10 @@ class ControlSignals:
     def_addr = ("localhost", 1103)
     isListening = False
     sock = None
-    gasVal = 0
-    steeringAngle = 0
-    cameraState = 0
+    gasVal = 0 #0% throttle
+    steeringAngle = 0 #0 degrees
+    cameraState = 0 #Distorted mode
+    controlState = 0 #Manual mode
 
 
 if __name__ == "__main__":
