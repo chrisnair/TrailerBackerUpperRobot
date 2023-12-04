@@ -25,8 +25,6 @@ public class Server {
      */
     public static final int DEFAULT_PORT = 1452;
 
-    public static final int DEFAULT_OUTPUT_PORT = 1103;
-
     /**
      * ServerSocket that dispatches Sockets to ClientHandlers
      */
@@ -50,13 +48,14 @@ public class Server {
 
     Thread connectionListener;
 
-    OutputHandler out;
+    private OutputStream out;
+    private InputStream in;
 
     /**
      * Constructs a Server object with the default port (1452)
      */
     public Server() {
-        this(DEFAULT_PORT);
+        this(1452);
     }
 
     /**
@@ -70,8 +69,25 @@ public class Server {
         this.validIDs = new ArrayList<>();
         this.id = UUID.randomUUID();
         initializeServer();
-        out = new OutputHandler(this, DEFAULT_OUTPUT_PORT);
+        connectToOutput();
 
+    }
+
+    private void connectToOutput() {
+        Runnable r = () -> {
+            try (ServerSocket ss = new ServerSocket(1103)) {
+                Socket s = ss.accept();
+                this.out = s.getOutputStream();
+                this.in = s.getInputStream();
+                Printer.debugPrint("Output is connected!");
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        };
+        Thread connector = new Thread(r);
+
+        connector.start();
     }
 
     /**
@@ -132,6 +148,20 @@ public class Server {
     protected ClientHandler initializeClientHandler(Socket s) {
         return new ClientHandler(s, this);
 
+    }
+
+    public void sendPacketToOutput(Packet p) {
+        Printer.debugPrint("Sending to output side" + p);
+        try {
+            String msg = p.toJSONString();
+            if (out != null)
+                out.write(p.toJSONString().getBytes(StandardCharsets.UTF_8), 0, msg.length());
+        } catch (IOException e) {
+
+            out = null;
+            in = null;
+            connectToOutput();
+        }
     }
 
     /**
