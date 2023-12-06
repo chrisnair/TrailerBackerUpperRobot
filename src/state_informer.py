@@ -11,6 +11,7 @@ import image_utils as iu
 from camera import Camera
 from truck import Truck
 from streaming import UDPStreamer
+from control_signals import sendSuggestedAngle, getControlState
 
 # TODO: Come up with a nice name for this module and class
 # Working name: StateInformer get it like state informer like a spy? It's so funny.
@@ -20,6 +21,14 @@ as described in http://liu.diva-portal.org/smash/get/diva2:1279885/FULLTEXT01.pd
 
 
 class StateInformer:
+    _self = None
+    def __new__(cls):
+        # Ensures only one instance of Camera exists at one time. Any module creating a camera object references the SAME camera. This is very useful.
+        # Once second camera is set up I will make two children of this class (one for each camera), and those classes will be singletons.
+        if cls._self is None:
+            cls._self = super().__new__(cls)
+
+        return cls._self
     def __init__(self):
         # "pos" refers to coordinates in image of the form (x-pixel, y-pixel)
         self.thread: Thread = Thread(target = self.update_continuosly)
@@ -33,6 +42,7 @@ class StateInformer:
         self.frame = self.cam.read()
         self.remapping_information = iu.generate_remapping_information(self.frame)
         self.frame = iu.undistort(self.frame, self.remapping_information)
+        self.frame = ip.region_of_interest(self.frame)
 
         self.truck = Truck()
         
@@ -107,7 +117,6 @@ class StateInformer:
             angle *= -1 # if the trailer is to the left, angle is negative
 
         self.trailer_lane_angle = angle 
-
         # I don't feel like drawing the triangle for this but trust me
 
     def get_trailer_lane_angle(self):
@@ -160,7 +169,6 @@ class StateInformer:
 
         if not self._is_on_left(self.lane_center_pos): # if the lane center is on the RIGHT, then the car must be on the left.
             angle *= -1
-
         self.car_lane_angle = angle
         """
                  C    Point C: Camera Location (Car rear)
@@ -230,9 +238,8 @@ class StateInformer:
         # Relies on: update_frame()
         img = self.frame
         edges = ip.edge_detector(img)
-        cropped_edges = ip.region_of_interest(edges,True)
-        line_segments = ip.detect_line_segments(cropped_edges)
-        lane_lines = ip.average_slope_intercept(img, line_segments)
+        line_segments = ip.detect_line_segments(edges)
+        lane_lines = ip.average_slope_intercept(edges, line_segments)
         self.lanes = lane_lines
     
     def get_lanes(self):
@@ -255,9 +262,7 @@ class StateInformer:
 
             lane1_upper_point = (lane1_x1, lane1_y1) if lane1_y1 < lane1_y2 else (lane1_x2, lane1_y2)
             lane2_upper_point = (lane2_x1, lane2_y1) if lane2_y1 < lane2_y2 else (lane2_x2, lane2_y2)
-
             self.lane_center_pos = iu.midpoint(lane1_upper_point, lane2_upper_point)
-
             
 
         elif len(self.lanes) == 1:
@@ -277,7 +282,7 @@ class StateInformer:
     def get_lane_center_pos(self):
         return self.lane_center_pos
 
-    def update_state(self):
+    def update_state_and_inform(self):
         self.update_frame() # This one needs to be first; the others rely on it.
 
         #self.update_vel()
@@ -295,28 +300,35 @@ class StateInformer:
 
         self.update_trailer_deviation()
         self.update_car_deviation()
+        print(self.hitch_angle, self.trailer_deviation, self.trailer_lane_angle)
+
+        #streaming stuff
         red = iu.filter_red(self.frame)
         x,y = self.trailer_pos
         camera_x, camera_y = self.CAMERA_LOCATION
         trailer = ip.display_trailer_info(self.frame, self.hitch_angle,[camera_x,camera_y,x,y])
         #self.streamer.stream_image(ip.display_lanes_and_path(self.frame, self.hitch_angle, self.lanes))
         edges = ip.edge_detector(self.frame)
-        cropped_edges = ip.region_of_interest(edges,True)
-        combined = ip.display_lanes_and_path(trailer, self.steering_angle,self.lanes)
+        combined = ip.display_lanes_and_path(edges, self.steering_angle,self.lanes)
         self.streamer.stream_image(combined)
-        
 
+        #send suggested angle back to app for display
+        ASSISTED = 1
+        if getControlState()==ASSISTED: # if in assisted mode, send angle 
+            print("sending angle")
+            sendSuggestedAngle(self.steering_angle)
+        
     def update_frame(self):
         img = self.cam.read()
         self.frame = iu.undistort(img, self.remapping_information)
-        self.frame = self.frame
+        self.frame=ip.region_of_interest(self.frame)
     
     def get_frame(self):
         return self.frame
 
     def update_continuosly(self):
         while not self.stopped:
-            self.update_state()
+            self.update_state_and_inform()
             
     
     def start(self):

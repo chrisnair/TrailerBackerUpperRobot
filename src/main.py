@@ -1,7 +1,7 @@
 import signal
 from truck import Truck
 from camera import Camera
-from controller import Controller
+from driver import Driver
 
 def handler(signum: signal.Signals, stack_frame):
     global done
@@ -12,6 +12,6 @@ def handler(signum: signal.Signals, stack_frame):
     signal.signal(signal.SIGINT, handler) # type: ignore
 
 if __name__ == '__main__':
-    controller = Controller().drive()
+    driver = Driver().drive()
 
    

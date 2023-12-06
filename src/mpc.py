@@ -134,7 +134,7 @@ class Predicter:
     
 if __name__ == '__main__':
     informer = StateInformer()
-    informer.update_state()
+    informer.update_state_and_inform()
     predicter = Predicter(informer)
     time.sleep(5)
     now = time.time()

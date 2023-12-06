@@ -19,7 +19,8 @@ def getDataFromJSON(jsonstr):
         elif "cmc;" in command:
             ControlSignals.cameraState = packet["data"]
         elif "cmch;" in command:
-            ControlSignals.controlState = int(packet["data"])
+            ControlSignals.controlState = int(float(packet["data"]))
+            print(ControlSignals.controlState)
 
 
 
@@ -42,7 +43,7 @@ def startUpdateLoop():
         if packet == "":
             continue
         updates = splitPacketsAndUpdate(packet)
-        #print(updates)
+        print(updates)
 
         for update in updates:
             getDataFromJSON(update)
@@ -60,7 +61,10 @@ def startListening():
 
 
 def sendSuggestedAngle(angle):
-    ControlSignals.sock.sendall("{\"command\":\"inf;str;\", \"data\":\"" + str(angle) + "\", \"packetID\":\"null\", \"authID\":\"null\"}")
+    
+    msg = "{\"command\":\"inf;sa;\", \"data\":\"" + str(angle) + "\", \"packetID\":\"null\", \"authID\":\"null\"}"
+    print("sending suggested angle: ", msg)
+    ControlSignals.sock.sendall(bytes(msg, 'utf-8'))
 
 
 def initSock():
@@ -83,6 +87,9 @@ def getDrivePower():
 
 def getCameraState():
     return ControlSignals.cameraState
+
+def getControlState():
+    return ControlSignals.controlState
 
 
 class ControlSignals:

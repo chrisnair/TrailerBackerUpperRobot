@@ -1,62 +1,127 @@
-import signal
-
+from constants import ControlMode
+from threading import Thread
+from truck import Truck
+from gamepad import Gamepad, Inputs
+from mpc import Predicter
+from state_informer import StateInformer
+import sys
+import control_signals
 import time
-from streaming import UDPStreamer
-from camera import Camera
-import cv2
-import numpy as np
-import image_utils as iu
+STOP = -1
+MANUAL = 0
+ASSISTED = 1
+AUTOMATIC = 2
+PHONE_CONTROL = 1
+GAMEPAD_CONTROL = 0
 
-
-def cleanup():
-    car.cleanup()
-    streamer.stop()
-    cam.stop()
-    exit(0)
-
-if __name__ == "__main__":
-    from truck import Truck
-    from gamepad import Gamepad, Inputs
-    from data_client import DataClient
-    import control_signals
-    # Trigger cleanup upon keyboard interrupt.
-    def handler(signum: signal.Signals, stack_frame):
-        global done
-        print("\nKeyboard interrupt detected.")
-        done = True
-        # print(signum, signal.Signals(signum).name, stack_frame) 
-        cleanup()
-    signal.signal(signal.SIGINT, handler) # type: ignore
-
-
-
-    g = Gamepad()
-    #cam = Camera().start()
-    car = Truck()
-    client = DataClient()
-    control_signals.startListening()
-
-    #def get_remap(image):
-    #    filepath = './src/camera_calibration/calibrations/'
-    #    camera_matrix =  np.load(filepath+"matrix800x600.npz")['arr_0']
-    #    distortion_coefficients = np.load(filepath+"distortion800x600.npz")['arr_0']
-
-    #    h, w = image.shape[:2]
-    #    newcameramtx, roi = cv2.getOptimalNewCameraMatrix(camera_matrix, distortion_coefficients, (w,h), 1, (w,h))
-    #    image_remap_x, image_remap_y = cv2.initUndistortRectifyMap(camera_matrix, distortion_coefficients, None, newcameramtx, (w,h), 5)
-    #    return image_remap_x, image_remap_y, roi
-
+g = Gamepad()
+class Driver:
+    def __init__(self):
+        self.truck = Truck()
+        self.input_in_auto_thread = Thread(target=self.input_in_auto)
+        self.stopped = True
+        self.exit_auto_flag = False
+        self.state_informer = StateInformer().start()
+        self.predicter = Predicter(self.state_informer)
+        self.driving_mode = MANUAL
+        self.transition_mode = -1
+    def input_in_auto(self):
+        while self.driving_mode == AUTOMATIC:
+            try:
+                g.update_input()
+            except:
+                pass
+            
+            if(g.was_pressed(Inputs.B)):
+                self.driving_mode=MANUAL
+                self.exit_auto_flag = True
+                print("setting flag")
+                self.truck.set_drive_power(0)
+                self.truck.set_steering_angle(0)
+                break
+    def exit_auto(self):
+        print("exiting auto")
+        self.truck.set_drive_power(0)
+        self.truck.set_steering_angle(0)
+        self.driving_mode = MANUAL
+        self.input_in_auto_thread.join()
     
+    def cleanup(self):
+        if self.input_in_auto_thread.is_alive():
+            self.input_in_auto_thread.join()
+        self.state_informer.stop()
+        self.truck.cleanup()
+        
+    def manual(self):
+        if self.driving_mode == MANUAL or self.driving_mode == ASSISTED:
+            if ControlMode.CURRENT_CONTROL_MODE==GAMEPAD_CONTROL:
 
-    print("Starting Main Loop!")
-    while True:
-        steer = control_signals.getSteeringAngle()
-        drive = control_signals.getDrivePower()
+                try:
+                    g.update_input()
+                except:
+                    print("NO CONTROLLER DETECTED. Change control mode in config.yml to use phone, or plug in a gamepad and restart to continue.")
+                    return -1
 
-        if steer is not None:
-            car.phone_steer(steer)
-        if drive is not None:
-            car.set_drive_power(drive)
+                if g.was_pressed(Inputs.B):
+                    self.stopped = True
+                    return -1
+                if g.was_pressed(Inputs.A):
+                    self.transition_mode = AUTOMATIC
+                    print("Press START to transition to AUTOMATIC MODE")
+                if g.was_pressed(Inputs.START):
+                    if self.transition_mode == AUTOMATIC:
+                        self.driving_mode = self.transition_mode
+                        self.input_in_auto_thread = Thread(target=self.input_in_auto)
+                        self.exit_auto_flag=False
+                        self.input_in_auto_thread.start()
 
-        time.sleep(1/60)
+
+                steer = g.get_stick_value(Inputs.LX)
+                if steer is not None:
+                    self.truck.gamepad_steer(steer)
+                drive = g.get_trigger_value()
+                if drive is not None:
+                    self.truck.gamepad_drive(drive)
+
+            elif ControlMode.CURRENT_CONTROL_MODE==PHONE_CONTROL:
+                drive = control_signals.getDrivePower()
+                #print(drive)
+                self.truck.set_drive_power(drive)
+                self.truck.phone_steer(control_signals.getSteeringAngle())
+                
+
+    def automatic(self):
+        if self.exit_auto_flag:
+            self.exit_auto()
+            return -1
+        self.truck.set_drive_power(-.6)
+        #now = time.time()
+        t, y, f, angle ,steps = self.predicter.predict_fast()
+        #future = time.time()
+        #print(future-now)
+        #print(angle)
+        self.truck.set_steering_angle(-angle)
+    def drive(self):
+        #control_signals.startListening()
+        self.stopped = False
+        print("IO INITIATED")
+        
+      
+        while not self.stopped:
+            if ControlMode.CURRENT_CONTROL_MODE==PHONE_CONTROL:
+                self.driving_mode=control_signals.getControlState()
+                #print(control_signals.getControlState())
+                #print(self.driving_mode)
+            if self.driving_mode==STOP:
+                break
+            if self.driving_mode==MANUAL:
+                if self.manual() == -1:
+                    break
+            elif self.driving_mode ==AUTOMATIC:
+                if self.automatic() == -1:
+                    break
+                
+       
+        self.cleanup()
+        sys.exit(0)
         

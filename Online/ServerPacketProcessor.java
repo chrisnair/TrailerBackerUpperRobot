@@ -30,18 +30,8 @@ public class ServerPacketProcessor extends PacketProcessor {
                 ch.sendForServerToDistribute(p);
                 return;
             case DefaultOnlineCommands.CONTROL_SIGNAL:
-                switch (p.getCommand().getCommandLine(1)) {
-                    case DefaultOnlineCommands.STEERING_ANGLE: {
-                        // System.out.println("Steering angle: " + p.getData());
-                        writePacketDataToFile(p, "steering_angle.tbu");
-                        return;
-                    }
-                    case DefaultOnlineCommands.THROTTLE: {
-                        // System.out.println((double)p.getData());
-                        writePacketDataToFile(p, "drive_power.tbu");
-                        return;
-                    }
-                }
+                    System.out.println("Sending a control signal packet to output");
+                    ch.sendPacketToOutput(p);
             case DefaultOnlineCommands.INFO:
                 switch (p.getCommand().getCommandLine(1)) {
                     case DefaultOnlineCommands.PICTURE: {
@@ -52,7 +42,7 @@ public class ServerPacketProcessor extends PacketProcessor {
             case DefaultOnlineCommands.DEBUG:
                 switch (p.getCommand().getCommandLine(1)) {
                     case DefaultOnlineCommands.CAMERA_MODE_CHANGE:
-                        writePacketDataToFile(p, "stream_state.tbu");
+                        ch.sendPacketToOutput(p);
                         return;
                 }
 
@@ -62,9 +52,4 @@ public class ServerPacketProcessor extends PacketProcessor {
 
         super.executePacket(p);
     }
-
-    public void writePacketDataToFile(Packet p, String filename) {
-        ch.sendPacketToOutput(p);
-    }
-
 }

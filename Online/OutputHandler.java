@@ -28,6 +28,7 @@ public class OutputHandler {
                     if (out == null && in == null) {
                         this.out = s.getOutputStream();
                         this.in = s.getInputStream();
+                        this.startListening();
                     } else {
                         Printer.debugPrint("WTF why would you try to connect more output threads????");
                     }
@@ -49,7 +50,7 @@ public class OutputHandler {
         connector.start();
     }
 
-    public void sendPacketToOutput(Packet p) {
+    public void sendPacket(Packet p) {
         Printer.debugPrint("Sending to output side" + p);
         try {
             String msg = p.toJSONString();
@@ -72,6 +73,7 @@ public class OutputHandler {
                 try {
                     in.read(bmsg, 0, 1024);
                     String msg = new String(bmsg, StandardCharsets.UTF_8);
+                    System.out.println("Message recieved from output: " + msg);
                     Packet p = Packet.fromJSONString(msg);
                     host.sendPacketToAllClients(p);
                 } catch (IOException e) {
