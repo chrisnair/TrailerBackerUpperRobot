@@ -51,7 +51,7 @@ public class OutputHandler {
     }
 
     public void sendPacket(Packet p) {
-        Printer.debugPrint("Sending to output side" + p);
+        Printer.debugPrint("Sending to output side " + p.toJSONString());
         try {
             String msg = p.toJSONString();
             if (out != null)

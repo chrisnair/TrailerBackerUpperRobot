@@ -142,7 +142,7 @@ public class PacketProcessor {
      * @param p Packet with the command to be executed.
      */
     public void executePacket(Packet p) {
-        System.out.println("Packet recieved!");
+        //System.out.println("Packet recieved!");
         // Printer.debugPrint("PacketProcessor level: " + p.toLongString());
 
         switch (p.getType()) {

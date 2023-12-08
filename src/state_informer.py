@@ -1,4 +1,5 @@
 from threading import Thread
+import time
 import numpy as np
 import math
 import cv2
@@ -11,7 +12,7 @@ import image_utils as iu
 from camera import Camera
 from truck import Truck
 from streaming import UDPStreamer
-from control_signals import sendSuggestedAngle, getControlState
+from control_signals import getCameraState
 
 # TODO: Come up with a nice name for this module and class
 # Working name: StateInformer get it like state informer like a spy? It's so funny.
@@ -38,11 +39,23 @@ class StateInformer:
         self.lane_center_pos: tuple[int, int] = (0,0)
         self.lanes: list[tuple[float, float, float, float]] = []
 
-        #self.frame: cv2.Mat = self.cam.read() # ensure frame is non-None at start
-        self.frame = self.cam.read()
+        self.frame: cv2.Mat = self.cam.read() # ensure frame is non-None at start
+
+        # generate matrices for undistortion and perspective transform
         self.remapping_information = iu.generate_remapping_information(self.frame)
-        self.frame = iu.undistort(self.frame, self.remapping_information)
-        self.frame = ip.region_of_interest(self.frame)
+        
+
+        # undistort initial frame
+        self.streamer = UDPStreamer()
+        self.undistorted = iu.undistort(self.frame, self.remapping_information)
+        self.streamer.stream_image(self.undistorted)
+        self.transformation_matrix = iu.get_transformation_matrix(self.undistorted)
+        #initialize streamer
+        self.transformed = iu.warp_perspective(self.undistorted, self.transformation_matrix)
+        #self.frame = ip.region_of_interest(self.frame)
+
+        self.streaming_views = (None,None,None,None)
+        self.streaming_index = 0
 
         self.truck = Truck()
         
@@ -56,16 +69,14 @@ class StateInformer:
         self.trailer_pos: tuple[float, float] = (0, 0)
         self.trailer_deviation: float = 0 # y2; inches
 
-        self.CAMERA_LOCATION = self.frame.shape[1] / 2, self.frame.shape[0]
+        self.CAMERA_LOCATION = self.undistorted.shape[1] / 2, self.undistorted.shape[0]
         self.HITCH_TO_TRAILER_AXLE_DIST = 8 # inches
-        print(self.frame.shape)
+        #print(self.frame.shape)
 
         self.stopped: bool = False
         
         # image correction
        
-
-        self.streamer = UDPStreamer()
 
         
     # def update_vel(self):
@@ -73,6 +84,17 @@ class StateInformer:
     
     def get_vel(self):
         return self.vel
+    
+    def update_streaming_views(self):
+        self.red = iu.filter_red(self.undistorted)
+        self.edges = ip.edge_detector(self.transformed)
+        camera_x, camera_y = self.CAMERA_LOCATION
+        x,y = self.trailer_pos
+        trailer = ip.display_trailer_info(self.undistorted, self.hitch_angle,[camera_x,camera_y,x,y])
+        detected = ip.display_lanes_and_path(self.edges, self.truck.current_steering_angle, self.lanes)
+        self.streaming_views =(self.undistorted, trailer, self.transformed, detected)
+
+
 
     def update_hitch_angle(self):
         # Relies on: update_trailer_pos()
@@ -98,9 +120,8 @@ class StateInformer:
         return self.hitch_angle
     
     def update_trailer_pos(self):
-        # Relies on: update_frame()
-        img = self.frame
-        red = iu.filter_red(img)
+        # Relies on: self.update_frame()
+        red = iu.filter_red(self.undistorted)
         self.trailer_pos = iu.weighted_center(red)
         
     def get_trailer_pos(self):
@@ -236,8 +257,9 @@ class StateInformer:
     
     def update_lanes(self):
         # Relies on: update_frame()
-        img = self.frame
+        img = self.transformed
         edges = ip.edge_detector(img)
+        #enhance = ip.crop_emptyness(edges)
         line_segments = ip.detect_line_segments(edges)
         lane_lines = ip.average_slope_intercept(edges, line_segments)
         self.lanes = lane_lines
@@ -246,8 +268,16 @@ class StateInformer:
         return self.lanes
     
     def update_lane_center_pos(self):
-        #Relies on: update_lanes()
+       # Relies on: update_lanes()
+        if len(self.lanes)==2:
+            #print(iu.slope(self.lanes[0]))
+            if abs(iu.slope(self.lanes[0]))-1 < .1:
+                #print(iu.slope(self.lanes[0]))
+                self.lanes.remove(self.lanes[0])
+            elif abs(iu.slope(self.lanes[1]))-1 < .1:
+                self.lanes.remove(self.lanes[1])
         if len(self.lanes) == 2:
+
 
             lane1 = self.lanes[0]
             lane1_x1, lane1_y1, lane1_x2, lane1_y2 = lane1
@@ -266,6 +296,10 @@ class StateInformer:
             
 
         elif len(self.lanes) == 1:
+            cam_x, cam_y =self.CAMERA_LOCATION
+            trailer_x, trailer_y = self.trailer_pos
+            center_x, center_y = self.lane_center_pos
+            self.lane_center_pos = (trailer_x + 100, center_y) if self._is_on_left((self.lanes[0][0], self.lanes[0][1])) else (trailer_x-100, center_y)
             pass
         """
         Here's what I'd like to do if there is one lane:
@@ -281,9 +315,10 @@ class StateInformer:
 
     def get_lane_center_pos(self):
         return self.lane_center_pos
-
     def update_state_and_inform(self):
+
         self.update_frame() # This one needs to be first; the others rely on it.
+        self.update_streaming_views()
 
         #self.update_vel()
 
@@ -300,39 +335,38 @@ class StateInformer:
 
         self.update_trailer_deviation()
         self.update_car_deviation()
-        print(self.hitch_angle, self.trailer_deviation, self.trailer_lane_angle)
 
+        
         #streaming stuff
-        red = iu.filter_red(self.frame)
-        x,y = self.trailer_pos
-        camera_x, camera_y = self.CAMERA_LOCATION
-        trailer = ip.display_trailer_info(self.frame, self.hitch_angle,[camera_x,camera_y,x,y])
-        #self.streamer.stream_image(ip.display_lanes_and_path(self.frame, self.hitch_angle, self.lanes))
-        edges = ip.edge_detector(self.frame)
-        combined = ip.display_lanes_and_path(edges, self.steering_angle,self.lanes)
-        self.streamer.stream_image(combined)
+        self.streamer.stream_image(self.streaming_views[getCameraState()])
+        
 
         #send suggested angle back to app for display
-        ASSISTED = 1
-        if getControlState()==ASSISTED: # if in assisted mode, send angle 
-            print("sending angle")
-            sendSuggestedAngle(self.steering_angle)
+        #ASSISTED = 1
+        # if getControlState()==ASSISTED: # if in assisted mode, send angle 
+        #    print("sending angle")
+        #    t, y, f, angle ,steps = self.predicter.predict()
+        #   sendSuggestedAngle(-angle)
         
     def update_frame(self):
-        img = self.cam.read()
-        self.frame = iu.undistort(img, self.remapping_information)
-        self.frame=ip.region_of_interest(self.frame)
+        self.frame = self.cam.read()
+        self.undistorted = iu.undistort(self.frame, self.remapping_information)
+        self.transformed = iu.warp_perspective(self.undistorted, self.transformation_matrix)
+        #self.frame = ip.region_of_interest(self.frame)
     
     def get_frame(self):
         return self.frame
+    def get_undistorted(self):
+        return self.undistorted
+    def get_transformed(self):
+        return self.transformed
 
     def update_continuosly(self):
         while not self.stopped:
             self.update_state_and_inform()
-            
+         
     
     def start(self):
-        print("starting thread")
         self.thread.start()
         return self
 

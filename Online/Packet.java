@@ -121,7 +121,7 @@ public final class Packet implements Serializable {
 
     public String toJSONString(){
         String s = String.format("{\"command\":\"%s\", \"data\":\" %s\", \"packetID\":\"%s\", \"authID\":\"%s\"}", command.toString(), data, packetID, authorID);
-        System.out.println(s);
+        //System.out.println(s);
         return s;
 
     }

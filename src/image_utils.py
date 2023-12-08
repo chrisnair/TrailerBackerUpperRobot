@@ -127,3 +127,35 @@ def midpoint(point1: tuple[ float, float], point2: tuple[float, float]) -> tuple
     x2, y2 = point2 
 
     return (x1 + x2) * 0.5 , (y1 + y2) * 0.5
+
+def get_transformation_matrix(image):
+    try:
+        height, width, _ = image.shape
+    except:
+        height, width = image.shape
+
+    tl = [width *2/9, height *.3]
+    tr = [width * 7/9, height * .3]
+    bl = [0, height* .45]
+    br = [width, height* .45]
+
+
+    src = np.float32([tl, tr, bl, br])
+
+    tl = [0,0]
+    tr = [image.shape[1], 0]
+    bl = [0, image.shape[0]]
+    br = [image.shape[1], image.shape[0]]
+
+    dst = np.float32([tl, tr, bl, br])
+
+    matrix = cv2.getPerspectiveTransform(src, dst)
+    return matrix
+
+def warp_perspective(image, transformation_matrix):
+    res = cv2.warpPerspective(image, transformation_matrix, (image.shape[1], image.shape[0]) )
+    return res
+
+def slope(line):
+    x1,y1,x2,y2=line
+    return (y1-y2)/(x1-x2) if x1!=x2 else (y1-y2)/(x1-x2+1)

@@ -18,14 +18,17 @@ import cv2
 # Local Imports
 from constants import LaneBoundsRatio, ImageProcessingCalibrations
 from image_utils import weighted_center, filter_red
-from PIL import Image, ImageFilter
-#from camera import Camera
+from camera import Camera
 #from streaming import UDPStreamer
 
 # Global Configuration
 warnings.simplefilter('ignore', np.RankWarning)
 # Ignoring Polyfit warning because it's bothersome.
 # Supposedly we can resolve it by decreasing the order (third argument), but it's already at 1 here...
+
+
+
+
 
 
 
@@ -59,33 +62,32 @@ The y-axis coordinate starts from the top of the image, while the x-axis starts 
 
 Leaving polygons embedded here for clarity.
 """
-def region_of_interest(image: cv2.Mat, reverse=False) -> cv2.Mat:
+def region_of_interest(image: cv2.Mat) -> cv2.Mat:
     try:
         height, width, _  = image.shape
     except:
         height, width = image.shape
-    mask = np.zeros_like(image)
-    # Focus on bottom half.
-    if not reverse:
-        crop = image[int(height/4):height, 0:width]
-    else:           
-        #crop = image[int(height):int(height/2), 0:int(width/2)]
-        im = cv2.cvtColor(image,cv2.COLOR_GRAY2RGB)
-        na = np.array(im)
+    crop = image[int(2*height/7):height, 0:width]
+    return crop
+       
+def crop_emptyness(image: cv2.Mat) -> cv2.Mat:
+    #crop = image[int(height):int(height/2), 0:int(width/2)]
+    im = image
+    na = np.array(im)
 
-        lower_bound = np.array([200, 200, 200])  # Lower bound of the color range
-        upper_bound = np.array([255, 255, 255])  # Upper bound of the color range
+    lower_bound = np.array([200, 200, 200])  # Lower bound of the color range
+    upper_bound = np.array([255, 255, 255])  # Upper bound of the color range
 
-        #Find X,Y coordinates of pixels within the specified color range
-        color_range = np.all((na >= lower_bound) & (na <= upper_bound), axis=2)
-        whiteY, whiteX = np.where(color_range)
-        hull = cv2.convexHull(np.column_stack((whiteX, whiteY)))
-        pts = hull[:, 0]
+    #Find X,Y coordinates of pixels within the specified color range
+    color_range = np.all((na >= lower_bound) & (na <= upper_bound), axis=2)
+    whiteY, whiteX = np.where(color_range)
+    hull = cv2.convexHull(np.column_stack((whiteX, whiteY)))
+    pts = hull[:, 0]
 
-        #Find the bounding box of the convex hull
-        rect = cv2.boundingRect(pts)
-        x, y, w, h = rect
-        crop = image[y:int(.5*(y+h)), x:x+w]
+    #Find the bounding box of the convex hull
+    rect = cv2.boundingRect(pts)
+    x, y, w, h = rect
+    crop = image[y:int(.6*(y+h)), x:x+w]
     return crop
 
 # Detect lines segments with hough lines using cropped image filtered for edges.
@@ -137,26 +139,36 @@ def average_slope_intercept(frame: cv2.Mat, line_segments: np.ndarray) -> list[t
     _, width = frame.shape
     left_fit = []
     right_fit = []
+    x_values= []
+    for line_segment in line_segments:
+        x_values.append(line_segment[0][0])
+    
+    leftmost = min(x_values)
+    rightmost = max(x_values)
+    mid = (leftmost + rightmost)/2
 
+  
+        
     for line_segment in line_segments:
         x1, y1, x2, y2 = line_segment[0]
+        if x1==x2: # if they are equal, there must be infinite slope, so we just subtract one to make a non-infinite slope
+            x1-=1
         if (x1-x2 != 0):
             fit = np.polyfit((x1, x2), (y1, y2), 1)
             slope, intercept = fit
+            if abs(slope-1) <.1:
+                continue
             if ((slope < 0) and 
-                (x1 < LaneBoundsRatio.LEFT * width) and 
-                (x2 < LaneBoundsRatio.LEFT * width)):
+                (x1 < mid) and 
+                (x2 < mid)):
                 left_fit.append((slope, intercept))
             elif ((slope > 0) and 
-                (x1 > LaneBoundsRatio.RIGHT * width) and 
-                (x2 > LaneBoundsRatio.RIGHT * width)):
+                (x1 > mid) and 
+                (x2 > mid)):
                 right_fit.append((slope, intercept))
-        else:
-            print("AHHHHHHHHH")
 
     left_fit_average = np.average(left_fit, axis=0) # Get averages going downward. Collapse into one array.
     right_fit_average = np.average(right_fit, axis=0)
-    #print(left_fit_average, right_fit_average)
     lane_lines = []
     if len(left_fit) > 0:
         lane_lines.append(make_points(frame, left_fit_average))
@@ -293,7 +305,6 @@ def display_trailer_info(img: cv2.Mat,
     
 if __name__ == "__main__":
     cam = Camera().start()
-    streamer = UDPStreamer()
 
     i = 0
     while True:
@@ -319,4 +330,3 @@ if __name__ == "__main__":
         final_final = display_trailer_info(final, trailer_angle, trailer_points)
         
         
-        streamer.stream_image(cropped_edges)

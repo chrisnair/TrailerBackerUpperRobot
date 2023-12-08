@@ -4,6 +4,7 @@ from truck import Truck
 from gamepad import Gamepad, Inputs
 from mpc import Predicter
 from state_informer import StateInformer
+from control_signals import sendSuggestedAngle
 import sys
 import control_signals
 import time
@@ -85,15 +86,20 @@ class Driver:
 
             elif ControlMode.CURRENT_CONTROL_MODE==PHONE_CONTROL:
                 drive = control_signals.getDrivePower()
-                #print(drive)
                 self.truck.set_drive_power(drive)
                 self.truck.phone_steer(control_signals.getSteeringAngle())
+                   
+                if self.driving_mode == ASSISTED:
+                    t, y, f, angle ,steps = self.predicter.predict_fast()
+                    sendSuggestedAngle(angle)
                 
 
     def automatic(self):
         if self.exit_auto_flag:
             self.exit_auto()
             return -1
+        if abs(self.truck.current_steering_angle>10):
+            self.truck.set_drive_power(-.6)
         self.truck.set_drive_power(-.6)
         #now = time.time()
         t, y, f, angle ,steps = self.predicter.predict_fast()
@@ -108,18 +114,25 @@ class Driver:
         
       
         while not self.stopped:
-            if ControlMode.CURRENT_CONTROL_MODE==PHONE_CONTROL:
-                self.driving_mode=control_signals.getControlState()
-                #print(control_signals.getControlState())
-                #print(self.driving_mode)
-            if self.driving_mode==STOP:
-                break
-            if self.driving_mode==MANUAL:
-                if self.manual() == -1:
-                    break
-            elif self.driving_mode ==AUTOMATIC:
-                if self.automatic() == -1:
-                    break
+            try:
+
+                if ControlMode.CURRENT_CONTROL_MODE==PHONE_CONTROL:
+                    control_signals.startListening()
+                    self.driving_mode=control_signals.getControlState()
+                    #print(self.driving_mode)
+                if self.driving_mode==MANUAL or self.driving_mode==ASSISTED:
+                    if self.manual() == -1:
+                        break
+                elif self.driving_mode ==AUTOMATIC:
+                    if self.automatic() == -1:
+                        break
+            except Exception as e:
+                self.driving_mode=MANUAL
+                self.cleanup()
+                raise e
+                
+
+                    
                 
        
         self.cleanup()

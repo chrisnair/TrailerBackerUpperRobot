@@ -210,7 +210,7 @@ public abstract class OnlineObject {
 
     public void sendAppData(Packet p) {
         String json = p.toJSONString();
-        System.out.println(json);
+        //System.out.println(json);
         sendMessage(json);
     }
 

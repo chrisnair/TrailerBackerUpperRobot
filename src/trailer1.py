@@ -102,9 +102,9 @@ def compute_cost(y):
     beta2_target = 0
 
     
-    hitch_angle_weight= 1
-    trailer_displacement_weight = 15
-    trailer_lane_angle_weight = 30
+    hitch_angle_weight= 3
+    trailer_displacement_weight = 30
+    trailer_lane_angle_weight = 35
 
     cost = (
         trailer_displacement_weight * (y2_final - y2_target) ** 2 # displacement

@@ -17,10 +17,13 @@ def getDataFromJSON(jsonstr):
         elif "thr;" in command:
             ControlSignals.gasVal = float(packet["data"])
         elif "cmc;" in command:
-            ControlSignals.cameraState = packet["data"]
+            ControlSignals.cameraState = int(float(packet["data"]))
         elif "cmch;" in command:
             ControlSignals.controlState = int(float(packet["data"]))
             print(ControlSignals.controlState)
+    elif "dbg;" in command:
+        if "cmc;" in command:
+            ControlSignals.cameraState = int(float(packet["data"]))
 
 
 
@@ -43,7 +46,7 @@ def startUpdateLoop():
         if packet == "":
             continue
         updates = splitPacketsAndUpdate(packet)
-        print(updates)
+        #print(updates)
 
         for update in updates:
             getDataFromJSON(update)

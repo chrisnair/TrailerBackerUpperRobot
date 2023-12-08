@@ -57,7 +57,7 @@ settings:
         #Enable or disable streaming
         enabled: true
         #Streaming destination IP address. UDP Streaming also always streams to localhost.
-        destination ip: "192.168.1.102"
+        destination ip: "192.168.1.100"
         #Streaming destination port. Client is preconfigured with port 25565 by default. 
         destination port: 25565
         #Stream to web browser (TCP) or the client inluded in this repo (UDP)
@@ -66,7 +66,7 @@ settings:
     
     control:
     #0 for controller, 1 for phone
-        control mode: 0
+        control mode: 1
 
 
 

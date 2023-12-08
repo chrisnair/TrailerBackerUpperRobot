@@ -125,7 +125,6 @@ class UDPStreamer():
         Target of streaming thread.
         """
         while self.streaming_enabled and (not self.stopped):
-                print("send")
                 self.frame_segment.udp_frame(self.frame)
 
     # Enables threaded mode for the Streamer. This seemed to have been working fine but then I started seeing weird
