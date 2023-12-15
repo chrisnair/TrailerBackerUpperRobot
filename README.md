@@ -26,8 +26,11 @@ In `trailer1.py`, the main calculations for MPC are done.
 
 
 
-## HOW-to-RUN
-The code in Online is responsible for running the server by which the app and Raspberry Pi communicate. Run `ServerStarter.java` to start the server. To start the truck/trailer control software, run `main.py`. Settings can be configured in `config.yml.` A client for video streaming from the onboard camera is provided in `client.py`.
+## Running the code
+The code in Online is responsible for running the server by which the app and Raspberry Pi communicate.
+Run `ServerStarter.java` to start the server. To start the truck/trailer control software, run `main.py`.
+Settings can be configured in `config.yml`.
+A client for video streaming from the onboard camera is provided in `client.py`.
 
 ## Technologies Used
 Seeed Studio vehicle chassis.
