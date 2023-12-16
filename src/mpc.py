@@ -18,59 +18,8 @@ class Predicter:
         self.x = 0
         self.state_vector = [self.x, self.trailer_deviation, self.trailer_lane_angle * pi / 180, self.hitch_angle * pi / 180]
 
-    def predict(self):
-
-        str0 = 0
-        v1 = 1.4
-        t0 = 0 # need to change to live time probably
-        tstep = .01
-        x = 0 # don't care about distance traveled
-      
-
-        state_vector = self.state_vector
-
-        str_vec = np.linspace(str0 - 5, str0 + 5, 5)
-        cost = []
-        steer = []
-        
-        for str in str_vec:
-            u = [v1, -str * pi / 180]
-            [t, trailer_deviation, f, str_next] = func_eval(t0, state_vector, u, tstep)
-            
-            cost.append(f)
-            steer.append(str)
-
-        imin =  np.argmin(cost)
-        str_min = int(steer[imin])
-
-        # fine grid search
-
-        str_vec_fine = np.linspace(str_min - 4, str_min + 4, 9)
-        cost_fine = []
-        steer_fine = []
-
-        for str in str_vec_fine:
-
-            u = [v1, -str * pi / 180]
-            [t, trailer_deviation , f, str_next] = func_eval(t0, state_vector, u, tstep)
-            cost_fine.append(f)
-            steer_fine.append(str)
-            print(str)
-
-        imin = np.argmin(cost_fine)
-        str_min_fine = int(steer_fine[imin])
-
-        u = [v1, -str_min_fine * pi / 180]
-        [t, trailer_deviation, f, str_next] = func_eval(t0, state_vector, u, tstep)
-
-        #return t, trailer_deviation , str_min_fine
-        #print(str_min_fine)
-        if self.state_informer.get_vel() ==  0:
-            return 0, cost
-        #print(state_informer.get_vel())
-        
-        return -str_min_fine, cost
-    
+ 
+    # the same as Newton in trailer1.py
     def predict_fast(self):
         state_vector = [self.x, self.state_informer.get_trailer_deviation(), self.state_informer.get_trailer_lane_angle() * pi / 180, self.state_informer.get_hitch_angle() * pi / 180]
 

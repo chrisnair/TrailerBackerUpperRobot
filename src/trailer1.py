@@ -5,7 +5,7 @@ from scipy.integrate import solve_ivp
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 
-# TODO: Make better documentation after discussing with Dr. Schwarz
+# Model Predictive Control Navigation of a Car and Trailer by Dr. Chris Schwarz
 
 # This module is an implementation of model predictive control for truck-and-trailer systems as described by http://liu.diva-portal.org/smash/get/diva2:1279885/FULLTEXT01.pdf
 

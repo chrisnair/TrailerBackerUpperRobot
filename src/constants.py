@@ -45,13 +45,8 @@ class ControlMode():
 class DriveParams:
     STEERING_RACK_CENTER       = steering["center"]
 
-    SHARP_TURN_DEGREES         = driving["sharp turn threshold"]
-    
-    SHARP_TURN_DEGREES_REVERSE = driving["sharp turn reverse threshold"]
 
-class LaneBoundsRatio:
-    LEFT  = 1 / 2
-    RIGHT = 1 / 2
+
 
 class GPIO:
     SERVO_MOTOR_PIN         = gpio["servo motor"]
@@ -60,20 +55,6 @@ class GPIO:
     DRIVE_MOTOR_REVERSE_PIN = gpio["drive motor reverse"]
 
 
-class ImageProcessingCalibrations:
-    """
-    IMPORTANT
-
-    =0% --> Camera is exactly in the middle.
-    >0% --> Camera is skewed towards the left.
-    <0% --> Camera is skewed towards the right.
-
-    Must be expressed as decimal. 2% -> .02
-
-    This is the original comment from the prior developer:
-        "0.0 means car pointing to center, -0.03: car is centered to left, +0.03 means car pointing to right"
-    """
-    CAMERA_MID_OFFSET_PERCENT = camera["rear offset"]
 
 class CameraSettings:
 
@@ -84,17 +65,12 @@ class CameraSettings:
 class OpenCVSettings:
     RECORDING_FRAMERATE: int = camera["framerate"] # Arbitrary (this number does affect the frame rate, but the number you put here is not the true framerate and we don't know why).
 
-class ReverseCalibrations:
-    POSITION_THRESHOLD         = driving["position threshold"]
-    ANGLE_OFF_CENTER_THRESHOLD = driving["trailer angle off center threshold"]
-    HITCH_ANGLE_THRESHOLD      = driving["hitch angle threshold"]
-    TURN_RATIO                 = driving["turn ratio"]
+
 
 class Streaming:
     DESTINATION_ADDRESS = streaming["destination ip"]
     DESTINATION_PORT    = streaming["destination port"]
     ENABLED: bool             = streaming["enabled"]
-    WEB_STREAMING       = streaming["web streaming"]
 
 if __name__ == "__main__":
     print(settings)

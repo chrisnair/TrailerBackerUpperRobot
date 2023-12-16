@@ -42,55 +42,6 @@ class FrameSegment:
             array_pos_start = array_pos_end
             count -= 1
 
-class HelperObject:
-    """
-    For use with TCP streamer.
-    """
-    def __init__(self):
-        self.stopped=False
-        #self.camera = Camera()
-        #self.frame = self.camera.read()
-    
-    def video_feed_helper(self):
-        return Response(self.gen_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
-        
-    def gen_frames(self):
-        while not self.stopped:
-            frame = self.frame
-            ret, buffer = cv2.imencode('.jpg', frame)
-            frame = buffer.tobytes()
-            yield (b'--frame\r\n'
-                b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')  # concat frame one by one and show result
-            
-helper = HelperObject()
-class TCPStreamer:
-    """WIP web streaming using flask. Is slow"""
-
-    app = Flask(__name__)
-    def __init__(self):
-        self.main, self.this = Pipe()
-        self.stopped = False
-        self.thread = Thread(target=self.app.run, args = ())
-        self.thread.start()
-
-
-            
-    def stream_image(self, img: cv2.Mat):
-        helper.frame = img
-    
-    @app.route('/video_feed')
-    def video_feed():
-        return Response(helper.gen_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
-    
-
-    @app.route('/')
-    def index():
-        """Video streaming home page."""
-        return render_template('index.html')
-
-    def stop(self):
-        self.thread.join()
-    
 
 class UDPStreamer():
 
