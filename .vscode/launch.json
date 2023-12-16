@@ -5,6 +5,27 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "type": "java",
+            "name": "nads ServerStarter",
+            "request": "launch",
+            "mainClass": "Online.ServerStarter",
+            "projectName": "TrailerBackerUpperRobot_c0696a3d"
+        },
+        {
+            "type": "java",
+            "name": "nads2 ServerStarter",
+            "request": "launch",
+            "mainClass": "Online.ServerStarter",
+            "projectName": "TrailerBackerUpperRobot_8fdb73b8"
+        },
+        {
+            "type": "java",
+            "name": "Main",
+            "request": "launch",
+            "mainClass": "Main",
+            "projectName": "TrailerBackerUpperRobot_8fdb73b8"
+        },
+        {
             "name": "Python: Current File",
             "type": "python",
             "request": "launch",
@@ -20,6 +41,16 @@
             "console": "integratedTerminal",
             "justMyCode": true,
             "sudo": true
+        },
+        {
+            "name": "Python: Start Robot Main",
+            "type": "python",
+            "request": "launch",
+            "program": "../TrailerBackerUpperRobot/src/main.py",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "sudo": true
         }
     ]
+    
 }
